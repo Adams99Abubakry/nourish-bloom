@@ -1,12 +1,15 @@
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { defaultPrayers } from "@/data/quranData";
-import { Compass, MapPin, Bell, BellOff, Clock, Navigation } from "lucide-react";
+import { Compass, MapPin, Bell, BellOff, Clock, Navigation, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { usePrayerTimesWithLocation } from "@/hooks/usePrayerTimes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Prayers = () => {
+  const { prayerData, location, isLoading, error } = usePrayerTimesWithLocation();
+  
   const [notificationsEnabled, setNotificationsEnabled] = useState<Record<string, boolean>>({
     Fajr: true,
     Dhuhr: true,
@@ -18,18 +21,6 @@ const Prayers = () => {
   // Get current time to determine next prayer
   const now = new Date();
   const currentTime = now.getHours() * 60 + now.getMinutes();
-  
-  const prayersWithStatus = defaultPrayers.map((prayer) => {
-    const [hours, minutes] = prayer.time.split(':').map(Number);
-    const prayerTime = hours * 60 + minutes;
-    return {
-      ...prayer,
-      isPast: prayerTime < currentTime,
-      prayerMinutes: prayerTime,
-    };
-  });
-
-  const nextPrayer = prayersWithStatus.find(p => !p.isPast) || prayersWithStatus[0];
 
   const toggleNotification = (prayerName: string) => {
     setNotificationsEnabled(prev => ({
@@ -40,6 +31,18 @@ const Prayers = () => {
 
   // Simulated Qibla direction (this would use device compass in production)
   const qiblaDirection = 135; // degrees
+
+  const prayersWithStatus = prayerData?.prayers.map((prayer) => {
+    const [hours, minutes] = prayer.time.split(':').map(Number);
+    const prayerTime = hours * 60 + minutes;
+    return {
+      ...prayer,
+      isPast: prayerTime < currentTime,
+      prayerMinutes: prayerTime,
+    };
+  }) || [];
+
+  const nextPrayer = prayersWithStatus.find(p => !p.isPast) || prayersWithStatus[0];
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,9 +56,21 @@ const Prayers = () => {
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Prayer Times</h1>
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
-            <MapPin className="w-4 h-4" />
-            <span>New York, USA</span>
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Detecting location...</span>
+              </>
+            ) : (
+              <>
+                <MapPin className="w-4 h-4" />
+                <span>{location?.city}{location?.country ? `, ${location.country}` : ""}</span>
+              </>
+            )}
           </div>
+          {prayerData?.hijriDate && (
+            <p className="text-sm text-muted-foreground mt-1">{prayerData.hijriDate}</p>
+          )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -66,58 +81,77 @@ const Prayers = () => {
                 <CardTitle>Today's Prayers</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {prayersWithStatus.map((prayer) => (
-                  <div
-                    key={prayer.name}
-                    className={cn(
-                      "flex items-center justify-between p-4 rounded-xl transition-all",
-                      prayer.name === nextPrayer.name
-                        ? "bg-primary text-primary-foreground"
-                        : prayer.isPast
-                        ? "bg-muted/50 text-muted-foreground"
-                        : "bg-secondary/50"
-                    )}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={cn(
-                        "w-10 h-10 rounded-lg flex items-center justify-center",
-                        prayer.name === nextPrayer.name
-                          ? "bg-primary-foreground/20"
-                          : "bg-primary/10"
-                      )}>
-                        <span className={cn(
-                          "font-arabic text-sm",
-                          prayer.name === nextPrayer.name ? "text-primary-foreground" : "text-primary"
-                        )}>
-                          {prayer.arabicName}
-                        </span>
-                      </div>
-                      <span className="font-medium">{prayer.name}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <span className="font-semibold tabular-nums">{prayer.time}</span>
-                      {prayer.name !== "Sunrise" && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => toggleNotification(prayer.name)}
-                          className={cn(
-                            prayer.name === nextPrayer.name
-                              ? "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
-                              : "text-muted-foreground hover:text-foreground"
-                          )}
-                        >
-                          {notificationsEnabled[prayer.name] ? (
-                            <Bell className="w-4 h-4" />
-                          ) : (
-                            <BellOff className="w-4 h-4" />
-                          )}
-                        </Button>
+                {isLoading ? (
+                  <>
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                    ))}
+                  </>
+                ) : error ? (
+                  <p className="text-muted-foreground text-center py-8">
+                    Unable to load prayer times. Please enable location access.
+                  </p>
+                ) : (
+                  prayersWithStatus.map((prayer) => (
+                    <div
+                      key={prayer.name}
+                      className={cn(
+                        "flex items-center justify-between p-4 rounded-xl transition-all",
+                        prayer.name === nextPrayer?.name
+                          ? "bg-primary text-primary-foreground"
+                          : prayer.isPast
+                          ? "bg-muted/50 text-muted-foreground"
+                          : "bg-secondary/50"
                       )}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={cn(
+                          "w-10 h-10 rounded-lg flex items-center justify-center",
+                          prayer.name === nextPrayer?.name
+                            ? "bg-primary-foreground/20"
+                            : "bg-primary/10"
+                        )}>
+                          <span className={cn(
+                            "font-arabic text-sm",
+                            prayer.name === nextPrayer?.name ? "text-primary-foreground" : "text-primary"
+                          )}>
+                            {prayer.arabicName}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-medium block">{prayer.name}</span>
+                          {prayer.name === nextPrayer?.name && prayerData?.timeToNextPrayer && (
+                            <span className="text-xs text-primary-foreground/70">
+                              in {prayerData.timeToNextPrayer}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold tabular-nums">{prayer.time}</span>
+                        {prayer.name !== "Sunrise" && (
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => toggleNotification(prayer.name)}
+                            className={cn(
+                              prayer.name === nextPrayer?.name
+                                ? "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                                : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {notificationsEnabled[prayer.name] ? (
+                              <Bell className="w-4 h-4" />
+                            ) : (
+                              <BellOff className="w-4 h-4" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </CardContent>
             </Card>
           </div>
