@@ -29,13 +29,28 @@ export const TRANSLATIONS: Translation[] = [
   { id: "en.sahih", name: "Sahih International", language: "English" },
   { id: "en.pickthall", name: "Pickthall", language: "English" },
   { id: "en.yusufali", name: "Yusuf Ali", language: "English" },
+  { id: "fr.hamidullah", name: "Muhammad Hamidullah", language: "French" },
+  { id: "ar.muyassar", name: "Tafsir al-Muyassar", language: "Arabic" },
+  { id: "ur.ahmedali", name: "Ahmed Ali", language: "Urdu" },
+  { id: "id.indonesian", name: "Indonesian Ministry", language: "Indonesian" },
+  { id: "tr.ates", name: "Süleyman Ateş", language: "Turkish" },
+  { id: "de.aburida", name: "Abu Rida Muhammad", language: "German" },
+  { id: "es.cortes", name: "Julio Cortés", language: "Spanish" },
 ];
 
 export const RECITERS = [
   { id: "ar.alafasy", name: "Mishary Rashid Alafasy", audioIdentifier: "Alafasy_128kbps" },
-  { id: "ar.abdulbasit", name: "Abdul Basit Abdul Samad", audioIdentifier: "Abdul_Basit_Murattal_192kbps" },
+  { id: "ar.abdulbasit", name: "Abdul Basit Abdul Samad (Murattal)", audioIdentifier: "Abdul_Basit_Murattal_192kbps" },
+  { id: "ar.abdulbasit.mujawwad", name: "Abdul Basit Abdul Samad (Mujawwad)", audioIdentifier: "Abdul_Basit_Mujawwad_128kbps" },
   { id: "ar.hudhaify", name: "Ali Al-Hudhaify", audioIdentifier: "Hudhaify_128kbps" },
-  { id: "ar.minshawi", name: "Mohamed Siddiq Al-Minshawi", audioIdentifier: "Minshawy_Mujawwad_192kbps" },
+  { id: "ar.minshawi", name: "Mohamed Siddiq Al-Minshawi (Mujawwad)", audioIdentifier: "Minshawy_Mujawwad_192kbps" },
+  { id: "ar.minshawi.murattal", name: "Mohamed Siddiq Al-Minshawi (Murattal)", audioIdentifier: "Minshawy_Murattal_128kbps" },
+  { id: "ar.sudais", name: "Abdur-Rahman As-Sudais", audioIdentifier: "Abdurrahmaan_As-Sudais_192kbps" },
+  { id: "ar.shuraim", name: "Saud Ash-Shuraim", audioIdentifier: "Saood_ash-Shuraym_128kbps" },
+  { id: "ar.husary", name: "Mahmoud Khalil Al-Husary", audioIdentifier: "Husary_128kbps" },
+  { id: "ar.ajamy", name: "Ahmed ibn Ali al-Ajamy", audioIdentifier: "Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net" },
+  { id: "ar.maher", name: "Maher Al Muaiqly", audioIdentifier: "MastersMedia_128kbps" },
+  { id: "ar.ghamdi", name: "Saad Al-Ghamdi", audioIdentifier: "Ghamadi_40kbps" },
 ];
 
 // Get audio URL for a specific verse

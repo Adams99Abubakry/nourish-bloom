@@ -14,6 +14,7 @@ const cardVariants = cva(
         subtle: "bg-secondary/50 border border-border/30",
         glass: "bg-card/80 backdrop-blur-sm border border-border/30 shadow-soft",
         interactive: "bg-card border border-border/50 shadow-soft hover:shadow-card hover:border-primary/20 cursor-pointer",
+        gold: "bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 shadow-card",
       },
     },
     defaultVariants: {
