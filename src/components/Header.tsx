@@ -1,8 +1,10 @@
-import { Moon, Menu, X } from "lucide-react";
+import { Moon, Menu, X, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { name: "Home", path: "/" },
@@ -16,17 +18,22 @@ const navItems = [
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { isDarkMode, toggleDarkMode } = useTheme();
+  const { user } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border/50">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <Moon className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-semibold text-foreground">Noor</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-semibold text-foreground leading-tight">Nūr al-Islam</span>
+              <span className="text-xs text-muted-foreground arabic leading-none">نُور الإسلام</span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
@@ -47,15 +54,47 @@ export function Header() {
             ))}
           </nav>
 
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
+          {/* Right Actions */}
+          <div className="flex items-center gap-2">
+            {/* Dark Mode Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleDarkMode}
+              className="hidden sm:flex"
+            >
+              {isDarkMode ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </Button>
+
+            {/* Auth Button */}
+            {user ? (
+              <Link to="/dashboard">
+                <Button variant="subtle" size="sm" className="hidden sm:flex">
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/auth">
+                <Button variant="spiritual" size="sm" className="hidden sm:flex">
+                  Sign In
+                </Button>
+              </Link>
+            )}
+
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -77,6 +116,36 @@ export function Header() {
                   {item.name}
                 </Link>
               ))}
+              
+              <hr className="my-2 border-border/50" />
+              
+              {/* Mobile Dark Mode */}
+              <button
+                onClick={toggleDarkMode}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {isDarkMode ? "Light Mode" : "Dark Mode"}
+              </button>
+              
+              {/* Mobile Auth */}
+              {user ? (
+                <Link
+                  to="/dashboard"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="px-4 py-3 rounded-lg text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <Link
+                  to="/auth"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="px-4 py-3 rounded-lg text-sm font-medium bg-primary text-primary-foreground text-center"
+                >
+                  Sign In
+                </Link>
+              )}
             </div>
           </nav>
         )}

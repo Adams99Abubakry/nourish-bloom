@@ -14,7 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          dark_mode: boolean | null
+          dhikr_streak: number | null
+          full_name: string | null
+          id: string
+          last_dhikr_date: string | null
+          preferred_reciter: string | null
+          preferred_translation: string | null
+          quran_last_ayah: number | null
+          quran_last_surah: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          dark_mode?: boolean | null
+          dhikr_streak?: number | null
+          full_name?: string | null
+          id?: string
+          last_dhikr_date?: string | null
+          preferred_reciter?: string | null
+          preferred_translation?: string | null
+          quran_last_ayah?: number | null
+          quran_last_surah?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          dark_mode?: boolean | null
+          dhikr_streak?: number | null
+          full_name?: string | null
+          id?: string
+          last_dhikr_date?: string | null
+          preferred_reciter?: string | null
+          preferred_translation?: string | null
+          quran_last_ayah?: number | null
+          quran_last_surah?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quran_bookmarks: {
+        Row: {
+          ayah_number: number
+          created_at: string
+          id: string
+          note: string | null
+          surah_number: number
+          user_id: string
+        }
+        Insert: {
+          ayah_number: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          surah_number: number
+          user_id: string
+        }
+        Update: {
+          ayah_number?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          surah_number?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ramadan_goals: {
+        Row: {
+          charity_amount: number | null
+          created_at: string
+          dhikr_count: number | null
+          fasted: boolean | null
+          gave_charity: boolean | null
+          goal_date: string
+          id: string
+          journal_entry: string | null
+          prayed_asr: boolean | null
+          prayed_dhuhr: boolean | null
+          prayed_fajr: boolean | null
+          prayed_isha: boolean | null
+          prayed_maghrib: boolean | null
+          quran_pages: number | null
+          read_quran: boolean | null
+          user_id: string
+        }
+        Insert: {
+          charity_amount?: number | null
+          created_at?: string
+          dhikr_count?: number | null
+          fasted?: boolean | null
+          gave_charity?: boolean | null
+          goal_date?: string
+          id?: string
+          journal_entry?: string | null
+          prayed_asr?: boolean | null
+          prayed_dhuhr?: boolean | null
+          prayed_fajr?: boolean | null
+          prayed_isha?: boolean | null
+          prayed_maghrib?: boolean | null
+          quran_pages?: number | null
+          read_quran?: boolean | null
+          user_id: string
+        }
+        Update: {
+          charity_amount?: number | null
+          created_at?: string
+          dhikr_count?: number | null
+          fasted?: boolean | null
+          gave_charity?: boolean | null
+          goal_date?: string
+          id?: string
+          journal_entry?: string | null
+          prayed_asr?: boolean | null
+          prayed_dhuhr?: boolean | null
+          prayed_fajr?: boolean | null
+          prayed_isha?: boolean | null
+          prayed_maghrib?: boolean | null
+          quran_pages?: number | null
+          read_quran?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
