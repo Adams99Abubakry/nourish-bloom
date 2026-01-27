@@ -20,7 +20,7 @@ export function Footer() {
               <span className="text-sm text-muted-foreground">
                 Developed with 💚 by{" "}
                 <span className="font-semibold text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-shimmer">
-                  SiddiqueDev
+                  DevSiddique
                 </span>
               </span>
             </div>

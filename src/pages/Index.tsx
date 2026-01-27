@@ -91,20 +91,20 @@ const Index = () => {
 
         {/* CTA for non-logged in users */}
         {!user && (
-          <Card variant="spiritual" className="animate-slide-up overflow-hidden">
-            <CardContent className="p-6 relative">
-              <div className="absolute inset-0 islamic-pattern opacity-20" />
+          <Card variant="elevated" className="animate-slide-up overflow-hidden border-primary/20">
+            <CardContent className="p-4 sm:p-6 relative">
+              <div className="absolute inset-0 islamic-pattern opacity-10" />
               <div className="relative flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-center sm:text-left">
-                  <h2 className="text-lg font-semibold text-primary-foreground mb-1">
+                  <h2 className="text-base sm:text-lg font-semibold text-foreground mb-1">
                     Track Your Spiritual Journey
                   </h2>
-                  <p className="text-sm text-primary-foreground/70">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Sign in to save your progress, bookmarks, and daily goals
                   </p>
                 </div>
                 <Link to="/auth">
-                  <Button variant="gold" className="whitespace-nowrap">
+                  <Button variant="default" className="whitespace-nowrap">
                     Get Started
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -116,21 +116,21 @@ const Index = () => {
 
         {/* Next Prayer Highlight */}
         {prayerData?.nextPrayer && (
-          <Card variant="gold" className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-accent-foreground/70 text-sm mb-1">Next Prayer</p>
-                  <h3 className="text-2xl font-bold text-accent-foreground">
+          <Card variant="elevated" className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <p className="text-muted-foreground text-sm mb-1">Next Prayer</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-foreground">
                     {prayerData.nextPrayer.name}
-                    <span className="arabic ml-2 text-lg">{prayerData.nextPrayer.arabicName}</span>
+                    <span className="arabic ml-2 text-base sm:text-lg">{prayerData.nextPrayer.arabicName}</span>
                   </h3>
-                  <p className="text-accent-foreground/80 mt-1">
+                  <p className="text-muted-foreground mt-1 text-sm sm:text-base">
                     {prayerData.nextPrayer.time} • in {prayerData.timeToNextPrayer}
                   </p>
                 </div>
-                <div className="w-16 h-16 rounded-2xl bg-accent-foreground/10 flex items-center justify-center">
-                  <Moon className="w-8 h-8 text-accent-foreground/70" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Moon className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                 </div>
               </div>
             </CardContent>
