@@ -1,0 +1,297 @@
+// Daily verses with moral lessons - changes based on the day of the year
+
+export interface DailyVerseData {
+  arabic: string;
+  translation: string;
+  reference: string;
+  surah: number;
+  ayah: number;
+  moralLesson: string;
+  theme: string;
+}
+
+export const dailyVerses: DailyVerseData[] = [
+  {
+    arabic: "وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ",
+    translation: "And whoever relies upon Allah – then He is sufficient for him.",
+    reference: "At-Talaq 65:3",
+    surah: 65,
+    ayah: 3,
+    moralLesson: "True reliance on Allah brings peace and sufficiency. When we trust in His plan, we free ourselves from anxiety and find strength in His infinite wisdom.",
+    theme: "Trust in Allah"
+  },
+  {
+    arabic: "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+    translation: "Indeed, with hardship comes ease.",
+    reference: "Ash-Sharh 94:6",
+    surah: 94,
+    ayah: 6,
+    moralLesson: "Every difficulty is accompanied by relief. This verse reminds us that patience during trials leads to divine ease and that no hardship lasts forever.",
+    theme: "Hope & Patience"
+  },
+  {
+    arabic: "وَلَا تَيْأَسُوا مِن رَّوْحِ اللَّهِ",
+    translation: "And do not despair of relief from Allah.",
+    reference: "Yusuf 12:87",
+    surah: 12,
+    ayah: 87,
+    moralLesson: "Despair is forbidden in Islam. No matter how dark the situation, Allah's mercy and help are always near for those who believe.",
+    theme: "Never Despair"
+  },
+  {
+    arabic: "فَإِنَّ ذِكْرَ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ",
+    translation: "Verily, in the remembrance of Allah do hearts find rest.",
+    reference: "Ar-Ra'd 13:28",
+    surah: 13,
+    ayah: 28,
+    moralLesson: "Inner peace and tranquility come through connecting with Allah. Regular dhikr and prayer provide the spiritual nourishment our souls need.",
+    theme: "Inner Peace"
+  },
+  {
+    arabic: "وَاصْبِرْ وَمَا صَبْرُكَ إِلَّا بِاللَّهِ",
+    translation: "And be patient, and your patience is not but through Allah.",
+    reference: "An-Nahl 16:127",
+    surah: 16,
+    ayah: 127,
+    moralLesson: "True patience comes from Allah. When we seek His help in difficult times, He grants us the strength to persevere.",
+    theme: "Patience"
+  },
+  {
+    arabic: "وَقُل رَّبِّ زِدْنِي عِلْمًا",
+    translation: "And say, 'My Lord, increase me in knowledge.'",
+    reference: "Ta-Ha 20:114",
+    surah: 20,
+    ayah: 114,
+    moralLesson: "Seeking knowledge is a lifelong journey. This dua reminds us to always remain humble students, continuously growing in understanding.",
+    theme: "Knowledge"
+  },
+  {
+    arabic: "وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ",
+    translation: "And when My servants ask you concerning Me – indeed I am near.",
+    reference: "Al-Baqarah 2:186",
+    surah: 2,
+    ayah: 186,
+    moralLesson: "Allah is always close to us, listening to our prayers. We don't need intermediaries – He hears every sincere call.",
+    theme: "Closeness to Allah"
+  },
+  {
+    arabic: "وَمَا أَرْسَلْنَاكَ إِلَّا رَحْمَةً لِّلْعَالَمِينَ",
+    translation: "And We have not sent you except as a mercy to the worlds.",
+    reference: "Al-Anbiya 21:107",
+    surah: 21,
+    ayah: 107,
+    moralLesson: "The Prophet Muhammad ﷺ was sent as a mercy. Following his example means being merciful and compassionate to all creation.",
+    theme: "Mercy"
+  },
+  {
+    arabic: "إِنَّ اللَّهَ لَا يُغَيِّرُ مَا بِقَوْمٍ حَتَّىٰ يُغَيِّرُوا مَا بِأَنفُسِهِمْ",
+    translation: "Indeed, Allah will not change the condition of a people until they change what is in themselves.",
+    reference: "Ar-Ra'd 13:11",
+    surah: 13,
+    ayah: 11,
+    moralLesson: "Change starts from within. Personal transformation is the key to societal change. Take responsibility for your own growth.",
+    theme: "Self-Improvement"
+  },
+  {
+    arabic: "وَتَعَاوَنُوا عَلَى الْبِرِّ وَالتَّقْوَىٰ",
+    translation: "And cooperate in righteousness and piety.",
+    reference: "Al-Ma'idah 5:2",
+    surah: 5,
+    ayah: 2,
+    moralLesson: "Islam encourages collective good. We should support each other in doing good deeds and maintaining consciousness of Allah.",
+    theme: "Community"
+  },
+  {
+    arabic: "وَلَا تَمْشِ فِي الْأَرْضِ مَرَحًا",
+    translation: "And do not walk upon the earth exultantly.",
+    reference: "Al-Isra 17:37",
+    surah: 17,
+    ayah: 37,
+    moralLesson: "Humility is a virtue. Walking with arrogance is displeasing to Allah. True greatness lies in being humble.",
+    theme: "Humility"
+  },
+  {
+    arabic: "وَالَّذِينَ جَاهَدُوا فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا",
+    translation: "And those who strive for Us – We will surely guide them to Our ways.",
+    reference: "Al-Ankabut 29:69",
+    surah: 29,
+    ayah: 69,
+    moralLesson: "Sincere effort in Allah's path leads to guidance. The more we strive, the more Allah opens doors of understanding.",
+    theme: "Striving"
+  },
+  {
+    arabic: "وَأَحْسِنُوا ۛ إِنَّ اللَّهَ يُحِبُّ الْمُحْسِنِينَ",
+    translation: "And do good; indeed, Allah loves the doers of good.",
+    reference: "Al-Baqarah 2:195",
+    surah: 2,
+    ayah: 195,
+    moralLesson: "Excellence (ihsan) in all actions is beloved to Allah. Strive for quality in worship, work, and interactions.",
+    theme: "Excellence"
+  },
+  {
+    arabic: "يَا أَيُّهَا الَّذِينَ آمَنُوا اسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ",
+    translation: "O you who believe, seek help through patience and prayer.",
+    reference: "Al-Baqarah 2:153",
+    surah: 2,
+    ayah: 153,
+    moralLesson: "In times of difficulty, patience and prayer are our strongest tools. They connect us to Allah and give us strength.",
+    theme: "Seeking Help"
+  },
+  {
+    arabic: "وَالْكَاظِمِينَ الْغَيْظَ وَالْعَافِينَ عَنِ النَّاسِ",
+    translation: "Those who restrain anger and pardon the people.",
+    reference: "Aal-E-Imran 3:134",
+    surah: 3,
+    ayah: 134,
+    moralLesson: "Controlling anger and forgiving others are signs of piety. These qualities lead to inner peace and Allah's pleasure.",
+    theme: "Forgiveness"
+  },
+  {
+    arabic: "وَاللَّهُ يُحِبُّ الصَّابِرِينَ",
+    translation: "And Allah loves the steadfast.",
+    reference: "Aal-E-Imran 3:146",
+    surah: 3,
+    ayah: 146,
+    moralLesson: "Steadfastness in faith earns Allah's love. Stay firm on the right path regardless of challenges.",
+    theme: "Steadfastness"
+  },
+  {
+    arabic: "وَأَقِمِ الصَّلَاةَ ۖ إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ",
+    translation: "Establish prayer. Indeed, prayer prohibits immorality and wrongdoing.",
+    reference: "Al-Ankabut 29:45",
+    surah: 29,
+    ayah: 45,
+    moralLesson: "Prayer is a shield against evil. Regular, mindful prayer naturally leads to better character and moral conduct.",
+    theme: "Prayer"
+  },
+  {
+    arabic: "وَلَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ",
+    translation: "And do not despair of the mercy of Allah.",
+    reference: "Az-Zumar 39:53",
+    surah: 39,
+    ayah: 53,
+    moralLesson: "Allah's mercy encompasses all things. No sin is too great for His forgiveness when we sincerely repent.",
+    theme: "Divine Mercy"
+  },
+  {
+    arabic: "وَمَنْ أَحْسَنُ قَوْلًا مِّمَّن دَعَا إِلَى اللَّهِ",
+    translation: "And who is better in speech than one who invites to Allah.",
+    reference: "Fussilat 41:33",
+    surah: 41,
+    ayah: 33,
+    moralLesson: "Calling others to Allah with wisdom is the best form of speech. Share the message with kindness and patience.",
+    theme: "Dawah"
+  },
+  {
+    arabic: "إِنَّمَا الْمُؤْمِنُونَ إِخْوَةٌ",
+    translation: "The believers are but brothers.",
+    reference: "Al-Hujurat 49:10",
+    surah: 49,
+    ayah: 10,
+    moralLesson: "Faith creates a bond stronger than blood. Treat fellow believers with the love and care of family.",
+    theme: "Brotherhood"
+  },
+  {
+    arabic: "وَاذْكُرُوا اللَّهَ كَثِيرًا لَّعَلَّكُمْ تُفْلِحُونَ",
+    translation: "And remember Allah often that you may succeed.",
+    reference: "Al-Jumu'ah 62:10",
+    surah: 62,
+    ayah: 10,
+    moralLesson: "Success in this life and the next is tied to remembering Allah. Keep your tongue moist with His remembrance.",
+    theme: "Remembrance"
+  },
+  {
+    arabic: "يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تُبْطِلُوا صَدَقَاتِكُم بِالْمَنِّ وَالْأَذَىٰ",
+    translation: "O you who believe, do not invalidate your charities with reminders or injury.",
+    reference: "Al-Baqarah 2:264",
+    surah: 2,
+    ayah: 264,
+    moralLesson: "Give charity purely for Allah's sake. Reminding others of your generosity or causing them harm nullifies the reward.",
+    theme: "Sincerity in Charity"
+  },
+  {
+    arabic: "وَإِنَّ السَّاعَةَ لَآتِيَةٌ ۖ فَاصْفَحِ الصَّفْحَ الْجَمِيلَ",
+    translation: "And indeed, the Hour is coming; so forgive with gracious forgiveness.",
+    reference: "Al-Hijr 15:85",
+    surah: 15,
+    ayah: 85,
+    moralLesson: "With the Day of Judgment approaching, focus on forgiveness rather than holding grudges. Gracious forgiveness elevates the soul.",
+    theme: "Gracious Forgiveness"
+  },
+  {
+    arabic: "وَاعْتَصِمُوا بِحَبْلِ اللَّهِ جَمِيعًا وَلَا تَفَرَّقُوا",
+    translation: "And hold firmly to the rope of Allah all together and do not become divided.",
+    reference: "Aal-E-Imran 3:103",
+    surah: 3,
+    ayah: 103,
+    moralLesson: "Unity in the Muslim community comes through holding to the Quran and Sunnah. Division weakens us all.",
+    theme: "Unity"
+  },
+  {
+    arabic: "وَقُولُوا لِلنَّاسِ حُسْنًا",
+    translation: "And speak to people good words.",
+    reference: "Al-Baqarah 2:83",
+    surah: 2,
+    ayah: 83,
+    moralLesson: "Kind speech is a form of charity. Choose your words carefully and speak with gentleness to all people.",
+    theme: "Kind Speech"
+  },
+  {
+    arabic: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً",
+    translation: "Our Lord, give us in this world good and in the Hereafter good.",
+    reference: "Al-Baqarah 2:201",
+    surah: 2,
+    ayah: 201,
+    moralLesson: "Balance dunya and akhirah in your prayers. Seek Allah's blessings in both worldly matters and the eternal life.",
+    theme: "Balance"
+  },
+  {
+    arabic: "وَسَارِعُوا إِلَىٰ مَغْفِرَةٍ مِّن رَّبِّكُمْ",
+    translation: "And hasten to forgiveness from your Lord.",
+    reference: "Aal-E-Imran 3:133",
+    surah: 3,
+    ayah: 133,
+    moralLesson: "Don't delay in seeking forgiveness. The doors of repentance are always open – rush towards them.",
+    theme: "Repentance"
+  },
+  {
+    arabic: "وَاللَّهُ خَيْرُ الرَّازِقِينَ",
+    translation: "And Allah is the best of providers.",
+    reference: "Al-Jumu'ah 62:11",
+    surah: 62,
+    ayah: 11,
+    moralLesson: "Trust in Allah's provision. He provides for all His creation in ways we cannot imagine.",
+    theme: "Divine Provision"
+  },
+  {
+    arabic: "فَبِأَيِّ آلَاءِ رَبِّكُمَا تُكَذِّبَانِ",
+    translation: "So which of the favors of your Lord would you deny?",
+    reference: "Ar-Rahman 55:13",
+    surah: 55,
+    ayah: 13,
+    moralLesson: "Count your blessings. Allah's favors are countless – recognize and be grateful for each one.",
+    theme: "Gratitude"
+  },
+  {
+    arabic: "وَمَا تَوْفِيقِي إِلَّا بِاللَّهِ ۚ عَلَيْهِ تَوَكَّلْتُ وَإِلَيْهِ أُنِيبُ",
+    translation: "My success is only through Allah. Upon Him I have relied, and to Him I return.",
+    reference: "Hud 11:88",
+    surah: 11,
+    ayah: 88,
+    moralLesson: "All success comes from Allah alone. Acknowledge His role in your achievements and turn to Him in all matters.",
+    theme: "Reliance on Allah"
+  }
+];
+
+// Get verse for a specific day of the year
+export const getDailyVerse = (): DailyVerseData => {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = now.getTime() - start.getTime();
+  const oneDay = 1000 * 60 * 60 * 24;
+  const dayOfYear = Math.floor(diff / oneDay);
+  
+  // Cycle through verses based on day of year
+  const verseIndex = dayOfYear % dailyVerses.length;
+  return dailyVerses[verseIndex];
+};

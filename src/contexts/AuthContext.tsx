@@ -20,6 +20,8 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   isLoading: boolean;
+  justLoggedIn: boolean;
+  setJustLoggedIn: (value: boolean) => void;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -33,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [justLoggedIn, setJustLoggedIn] = useState(false);
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -59,6 +62,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }, 0);
         } else {
           setProfile(null);
+        }
+        
+        // Mark as just logged in on SIGNED_IN event
+        if (event === 'SIGNED_IN') {
+          setJustLoggedIn(true);
         }
       }
     );
@@ -96,12 +104,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password
     });
+    
+    if (!error) {
+      setJustLoggedIn(true);
+    }
+    
     return { error };
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setJustLoggedIn(false);
   };
 
   const refreshProfile = async () => {
@@ -116,6 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       profile,
       isLoading,
+      justLoggedIn,
+      setJustLoggedIn,
       signUp,
       signIn,
       signOut,

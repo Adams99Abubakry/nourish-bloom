@@ -1,10 +1,13 @@
 import { Header } from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { duas } from "@/data/quranData";
-import { HandHelping, Heart, Volume2 } from "lucide-react";
-import { useState } from "react";
+import { azkarCategories } from "@/data/hisnulMuslimData";
+import { HandHelping, Heart, Volume2, Pause, Sun, Moon, BookOpen } from "lucide-react";
+import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 const categories = [
   { id: "all", label: "All" },
@@ -19,6 +22,8 @@ const categories = [
 const Duas = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [playingId, setPlayingId] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const filteredDuas = duas.filter(
     (dua) => selectedCategory === "all" || dua.category === selectedCategory
@@ -28,6 +33,43 @@ const Duas = () => {
     setFavorites((prev) =>
       prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id]
     );
+  };
+
+  // Simple TTS for dua reading
+  const playDua = async (dua: typeof duas[0]) => {
+    if (playingId === dua.id) {
+      // Stop playing
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      window.speechSynthesis?.cancel();
+      setPlayingId(null);
+    } else {
+      // Stop any current playback
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      window.speechSynthesis?.cancel();
+
+      // Use speech synthesis for Arabic reading
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(dua.arabic);
+        utterance.lang = 'ar-SA';
+        utterance.rate = 0.8;
+        
+        utterance.onend = () => {
+          setPlayingId(null);
+        };
+        
+        utterance.onerror = () => {
+          setPlayingId(null);
+        };
+
+        window.speechSynthesis.speak(utterance);
+        setPlayingId(dua.id);
+      }
+    }
   };
 
   return (
@@ -42,6 +84,43 @@ const Duas = () => {
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Duas & Supplications</h1>
           <p className="text-muted-foreground">الأدعية والأذكار</p>
+        </div>
+
+        {/* Quick Links to Azkar */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 animate-slide-up">
+          <Link to="/azkar">
+            <Card variant="spiritual" className="overflow-hidden hover:scale-[1.02] transition-transform">
+              <CardContent className="p-4 flex items-center gap-3">
+                <Sun className="w-6 h-6 text-primary-foreground" />
+                <div>
+                  <p className="font-medium text-primary-foreground text-sm">Morning Azkar</p>
+                  <p className="text-xs text-primary-foreground/70">أذكار الصباح</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to="/azkar">
+            <Card variant="spiritual" className="overflow-hidden hover:scale-[1.02] transition-transform">
+              <CardContent className="p-4 flex items-center gap-3">
+                <Moon className="w-6 h-6 text-primary-foreground" />
+                <div>
+                  <p className="font-medium text-primary-foreground text-sm">Evening Azkar</p>
+                  <p className="text-xs text-primary-foreground/70">أذكار المساء</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to="/azkar" className="col-span-2 sm:col-span-1">
+            <Card variant="elevated" className="overflow-hidden hover:scale-[1.02] transition-transform">
+              <CardContent className="p-4 flex items-center gap-3">
+                <BookOpen className="w-6 h-6 text-primary" />
+                <div>
+                  <p className="font-medium text-foreground text-sm">Hisnul Muslim</p>
+                  <p className="text-xs text-muted-foreground">Full Collection</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Category Filter */}
@@ -88,8 +167,19 @@ const Duas = () => {
                         )}
                       />
                     </Button>
-                    <Button variant="icon" size="icon-sm">
-                      <Volume2 className="w-4 h-4" />
+                    <Button 
+                      variant="icon" 
+                      size="icon-sm"
+                      onClick={() => playDua(dua)}
+                      className={cn(
+                        playingId === dua.id && "bg-primary text-primary-foreground"
+                      )}
+                    >
+                      {playingId === dua.id ? (
+                        <Pause className="w-4 h-4" />
+                      ) : (
+                        <Volume2 className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
