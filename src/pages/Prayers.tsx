@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Compass, MapPin, Bell, BellOff, Clock, Navigation, Loader2, Volume2, VolumeX } from "lucide-react";
@@ -397,6 +398,8 @@ const Prayers = () => {
           </Card>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };

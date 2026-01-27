@@ -14,6 +14,7 @@ import Dhikr from "./pages/Dhikr";
 import Ramadan from "./pages/Ramadan";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Settings from "./pages/Settings";
 import Zakat from "./pages/Zakat";
 import Azkar from "./pages/Azkar";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/quran" element={<Quran />} />
               <Route path="/quran/:surahNumber" element={<SurahReader />} />
               <Route path="/prayers" element={<Prayers />} />
