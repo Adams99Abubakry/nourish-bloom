@@ -23,6 +23,10 @@ export type Database = {
           full_name: string | null
           id: string
           last_dhikr_date: string | null
+          preferred_city: string | null
+          preferred_country: string | null
+          preferred_latitude: number | null
+          preferred_longitude: number | null
           preferred_reciter: string | null
           preferred_translation: string | null
           quran_last_ayah: number | null
@@ -38,6 +42,10 @@ export type Database = {
           full_name?: string | null
           id?: string
           last_dhikr_date?: string | null
+          preferred_city?: string | null
+          preferred_country?: string | null
+          preferred_latitude?: number | null
+          preferred_longitude?: number | null
           preferred_reciter?: string | null
           preferred_translation?: string | null
           quran_last_ayah?: number | null
@@ -53,6 +61,10 @@ export type Database = {
           full_name?: string | null
           id?: string
           last_dhikr_date?: string | null
+          preferred_city?: string | null
+          preferred_country?: string | null
+          preferred_latitude?: number | null
+          preferred_longitude?: number | null
           preferred_reciter?: string | null
           preferred_translation?: string | null
           quran_last_ayah?: number | null

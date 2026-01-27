@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface PrayerTime {
   name: string;
@@ -102,9 +104,36 @@ const fetchPrayerTimes = async (latitude: number, longitude: number): Promise<Pr
   };
 };
 
-// Get user's location
-const getUserLocation = (): Promise<Location> => {
-  return new Promise((resolve, reject) => {
+// Get user's preferred location from profile
+const getUserPreferredLocation = async (userId: string): Promise<Location | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("preferred_latitude, preferred_longitude, preferred_city, preferred_country")
+      .eq("user_id", userId)
+      .single();
+
+    if (error || !data) return null;
+    
+    // Check if user has set preferred location
+    if (data.preferred_latitude && data.preferred_longitude) {
+      return {
+        latitude: data.preferred_latitude,
+        longitude: data.preferred_longitude,
+        city: data.preferred_city || "Unknown",
+        country: data.preferred_country || "",
+      };
+    }
+    
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+// Get user's location from geolocation API
+const getGeoLocation = (): Promise<Location> => {
+  return new Promise((resolve) => {
     if (!navigator.geolocation) {
       // Default to Mecca if geolocation not available
       resolve({
@@ -159,13 +188,30 @@ const getUserLocation = (): Promise<Location> => {
 export const useLocation = () => {
   const [location, setLocation] = useState<Location | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
-    getUserLocation().then((loc) => {
-      setLocation(loc);
+    const fetchLocation = async () => {
+      setLoading(true);
+      
+      // First check if logged-in user has a preferred location
+      if (user?.id) {
+        const preferredLocation = await getUserPreferredLocation(user.id);
+        if (preferredLocation) {
+          setLocation(preferredLocation);
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Fall back to geolocation
+      const geoLocation = await getGeoLocation();
+      setLocation(geoLocation);
       setLoading(false);
-    });
-  }, []);
+    };
+
+    fetchLocation();
+  }, [user?.id]);
 
   return { location, loading };
 };
