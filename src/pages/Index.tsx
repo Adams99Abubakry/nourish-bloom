@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { PrayerTimesCard } from "@/components/PrayerTimesCard";
 import { QuickActions } from "@/components/QuickActions";
 import { DailyVerse } from "@/components/DailyVerse";
 import { RamadanChecklist } from "@/components/RamadanChecklist";
+import { RamadanCountdown } from "@/components/RamadanCountdown";
 import { SplashScreen } from "@/components/SplashScreen";
 import { useHijriDate } from "@/hooks/useHijriDate";
 import { usePrayerTimesWithLocation } from "@/hooks/usePrayerTimes";
@@ -118,17 +120,17 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-charcoal/60 text-sm mb-1">Next Prayer</p>
-                  <h3 className="text-2xl font-bold text-charcoal">
+                  <p className="text-accent-foreground/70 text-sm mb-1">Next Prayer</p>
+                  <h3 className="text-2xl font-bold text-accent-foreground">
                     {prayerData.nextPrayer.name}
                     <span className="arabic ml-2 text-lg">{prayerData.nextPrayer.arabicName}</span>
                   </h3>
-                  <p className="text-charcoal/70 mt-1">
+                  <p className="text-accent-foreground/80 mt-1">
                     {prayerData.nextPrayer.time} • in {prayerData.timeToNextPrayer}
                   </p>
                 </div>
-                <div className="w-16 h-16 rounded-2xl bg-charcoal/10 flex items-center justify-center">
-                  <Moon className="w-8 h-8 text-charcoal/70" />
+                <div className="w-16 h-16 rounded-2xl bg-accent-foreground/10 flex items-center justify-center">
+                  <Moon className="w-8 h-8 text-accent-foreground/70" />
                 </div>
               </div>
             </CardContent>
@@ -148,15 +150,11 @@ const Index = () => {
         {/* Main Content Grid */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <PrayerTimesCard />
-          {hijriDate?.isRamadan && <RamadanChecklist />}
+          {hijriDate?.isRamadan ? <RamadanChecklist /> : <RamadanCountdown />}
         </section>
-
-        {/* Footer */}
-        <footer className="text-center py-8 text-sm text-muted-foreground">
-          <p className="arabic text-lg mb-2">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
-          <p>In the name of Allah, the Most Gracious, the Most Merciful</p>
-        </footer>
       </main>
+
+      <Footer />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PrayerTimesCard } from '@/components/PrayerTimesCard';
@@ -96,6 +97,7 @@ const Dashboard = () => {
     { name: 'Dhikr', icon: Compass, path: '/dhikr', color: 'text-primary' },
     { name: 'Zakat', icon: Calculator, path: '/zakat', color: 'text-primary' },
     { name: 'Ramadan', icon: Star, path: '/ramadan', color: 'text-gold' },
+    { name: 'Settings', icon: Settings, path: '/settings', color: 'text-muted-foreground' },
   ];
 
   return (
@@ -149,7 +151,7 @@ const Dashboard = () => {
         {/* Quick Links */}
         <section className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <h2 className="text-lg font-semibold text-foreground mb-4">Quick Access</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3">
             {quickLinks.map((link) => (
               <Link key={link.path} to={link.path}>
                 <Card variant="interactive" className="h-full">
@@ -250,13 +252,9 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </section>
-
-        {/* Footer */}
-        <footer className="text-center py-8 text-sm text-muted-foreground">
-          <p className="arabic text-lg mb-2">وَقُل رَّبِّ زِدْنِي عِلْمًا</p>
-          <p>"And say: My Lord, increase me in knowledge" (20:114)</p>
-        </footer>
       </main>
+
+      <Footer />
     </div>
   );
 };
