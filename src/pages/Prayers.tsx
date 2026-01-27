@@ -1,16 +1,59 @@
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Compass, MapPin, Bell, BellOff, Clock, Navigation, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { Compass, MapPin, Bell, BellOff, Clock, Navigation, Loader2, Volume2, VolumeX } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { usePrayerTimesWithLocation } from "@/hooks/usePrayerTimes";
+import { usePrayerTimesWithLocation, Location } from "@/hooks/usePrayerTimes";
+import { useAdhan } from "@/hooks/useAdhan";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+
+// Calculate Qibla direction based on user's location
+const calculateQiblaDirection = (latitude: number, longitude: number): number => {
+  // Kaaba coordinates
+  const kaabaLat = 21.4225;
+  const kaabaLng = 39.8262;
+  
+  // Convert to radians
+  const lat1 = (latitude * Math.PI) / 180;
+  const lat2 = (kaabaLat * Math.PI) / 180;
+  const lng1 = (longitude * Math.PI) / 180;
+  const lng2 = (kaabaLng * Math.PI) / 180;
+  
+  // Calculate bearing
+  const dLng = lng2 - lng1;
+  const x = Math.sin(dLng) * Math.cos(lat2);
+  const y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+  
+  let bearing = Math.atan2(x, y);
+  bearing = (bearing * 180) / Math.PI;
+  bearing = (bearing + 360) % 360;
+  
+  return Math.round(bearing);
+};
+
+// Get compass direction name
+const getDirectionName = (degrees: number): string => {
+  const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+  const index = Math.round(degrees / 22.5) % 16;
+  return directions[index];
+};
 
 const Prayers = () => {
   const { prayerData, location, isLoading, error } = usePrayerTimesWithLocation();
+  const { 
+    isPlaying, 
+    currentPrayer, 
+    notificationsEnabled, 
+    audioEnabled,
+    enableNotifications, 
+    disableNotifications, 
+    toggleAudio,
+    stopAdhan 
+  } = useAdhan(prayerData?.prayers);
   
-  const [notificationsEnabled, setNotificationsEnabled] = useState<Record<string, boolean>>({
+  const [notificationStates, setNotificationStates] = useState<Record<string, boolean>>({
     Fajr: true,
     Dhuhr: true,
     Asr: true,
@@ -18,19 +61,77 @@ const Prayers = () => {
     Isha: true,
   });
 
+  const [deviceOrientation, setDeviceOrientation] = useState<number | null>(null);
+  const [qiblaDirection, setQiblaDirection] = useState<number>(0);
+  const [compassAvailable, setCompassAvailable] = useState(false);
+
+  // Calculate Qibla when location is available
+  useEffect(() => {
+    if (location) {
+      const qibla = calculateQiblaDirection(location.latitude, location.longitude);
+      setQiblaDirection(qibla);
+    }
+  }, [location]);
+
+  // Try to get device orientation for compass
+  useEffect(() => {
+    const handleOrientation = (event: DeviceOrientationEvent) => {
+      if (event.alpha !== null) {
+        setDeviceOrientation(event.alpha);
+        setCompassAvailable(true);
+      }
+    };
+
+    // Request permission on iOS
+    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+      // Will be triggered by user interaction
+    } else if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', handleOrientation);
+    }
+
+    return () => {
+      window.removeEventListener('deviceorientation', handleOrientation);
+    };
+  }, []);
+
+  const requestCompassPermission = async () => {
+    try {
+      if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+        const permission = await (DeviceOrientationEvent as any).requestPermission();
+        if (permission === 'granted') {
+          window.addEventListener('deviceorientation', (event: DeviceOrientationEvent) => {
+            if (event.alpha !== null) {
+              setDeviceOrientation(event.alpha);
+              setCompassAvailable(true);
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Compass permission denied:', error);
+    }
+  };
+
   // Get current time to determine next prayer
   const now = new Date();
   const currentTime = now.getHours() * 60 + now.getMinutes();
 
-  const toggleNotification = (prayerName: string) => {
-    setNotificationsEnabled(prev => ({
+  const toggleNotification = async (prayerName: string) => {
+    if (!notificationsEnabled) {
+      const granted = await enableNotifications();
+      if (granted) {
+        toast.success("Adhan notifications enabled!");
+      } else {
+        toast.error("Please enable notifications in your browser settings");
+        return;
+      }
+    }
+    
+    setNotificationStates(prev => ({
       ...prev,
       [prayerName]: !prev[prayerName]
     }));
   };
-
-  // Simulated Qibla direction (this would use device compass in production)
-  const qiblaDirection = 135; // degrees
 
   const prayersWithStatus = prayerData?.prayers.map((prayer) => {
     const [hours, minutes] = prayer.time.split(':').map(Number);
@@ -43,6 +144,11 @@ const Prayers = () => {
   }) || [];
 
   const nextPrayer = prayersWithStatus.find(p => !p.isPast) || prayersWithStatus[0];
+
+  // Calculate the arrow rotation (Qibla relative to device heading)
+  const arrowRotation = compassAvailable && deviceOrientation !== null
+    ? qiblaDirection - deviceOrientation
+    : qiblaDirection;
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,6 +178,59 @@ const Prayers = () => {
             <p className="text-sm text-muted-foreground mt-1">{prayerData.hijriDate}</p>
           )}
         </div>
+
+        {/* Adhan Status Banner */}
+        {isPlaying && (
+          <Card variant="spiritual" className="mb-6 animate-slide-up overflow-hidden">
+            <CardContent className="p-4 relative">
+              <div className="absolute inset-0 islamic-pattern opacity-20" />
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Volume2 className="w-6 h-6 text-primary-foreground animate-pulse" />
+                  <div>
+                    <p className="font-semibold text-primary-foreground">Adhan Playing</p>
+                    <p className="text-sm text-primary-foreground/70">{currentPrayer} prayer time</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" onClick={stopAdhan} className="text-primary-foreground">
+                  Stop
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Adhan Settings */}
+        <Card variant="subtle" className="mb-6 animate-slide-up">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Bell className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="font-medium text-foreground">Adhan Notifications</p>
+                  <p className="text-xs text-muted-foreground">Get notified at prayer times</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={notificationsEnabled ? "default" : "subtle"}
+                  size="sm"
+                  onClick={notificationsEnabled ? disableNotifications : enableNotifications}
+                >
+                  {notificationsEnabled ? "Enabled" : "Enable"}
+                </Button>
+                <Button
+                  variant={audioEnabled ? "default" : "subtle"}
+                  size="icon-sm"
+                  onClick={toggleAudio}
+                  title={audioEnabled ? "Disable Adhan Audio" : "Enable Adhan Audio"}
+                >
+                  {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Prayer Times */}
@@ -141,7 +300,7 @@ const Prayers = () => {
                                 : "text-muted-foreground hover:text-foreground"
                             )}
                           >
-                            {notificationsEnabled[prayer.name] ? (
+                            {notificationStates[prayer.name] && notificationsEnabled ? (
                               <Bell className="w-4 h-4" />
                             ) : (
                               <BellOff className="w-4 h-4" />
@@ -184,8 +343,8 @@ const Prayers = () => {
 
                   {/* Qibla arrow */}
                   <div 
-                    className="absolute inset-0 flex items-center justify-center"
-                    style={{ transform: `rotate(${qiblaDirection}deg)` }}
+                    className="absolute inset-0 flex items-center justify-center transition-transform duration-300"
+                    style={{ transform: `rotate(${arrowRotation}deg)` }}
                   >
                     <div className="relative h-full flex flex-col items-center justify-start pt-8">
                       <Navigation className="w-8 h-8 text-gold fill-gold" />
@@ -200,7 +359,22 @@ const Prayers = () => {
 
                 <div className="mt-8 text-center">
                   <p className="text-3xl font-bold text-primary-foreground">{qiblaDirection}°</p>
-                  <p className="text-primary-foreground/70 text-sm">Southeast</p>
+                  <p className="text-primary-foreground/70 text-sm">{getDirectionName(qiblaDirection)}</p>
+                  {!compassAvailable && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="mt-4 text-primary-foreground/60"
+                      onClick={requestCompassPermission}
+                    >
+                      Enable Compass
+                    </Button>
+                  )}
+                  {compassAvailable && (
+                    <p className="text-xs text-primary-foreground/50 mt-2">
+                      Compass active - Point phone north
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>

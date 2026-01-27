@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation as useRouterLocation, useNavigate } from 'react-router-dom';
 import { Moon } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -65,6 +67,76 @@ export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps)
 
       {/* Bismillah at bottom */}
       <div className="absolute bottom-12 text-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
+        <p className="text-primary-foreground/60 arabic text-lg">
+          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Login-specific splash screen that shows after authentication
+export function LoginSplashScreen({ onComplete }: { onComplete: () => void }) {
+  const { profile } = useAuth();
+  const [fadeOut, setFadeOut] = useState(false);
+
+  useEffect(() => {
+    const fadeTimer = setTimeout(() => {
+      setFadeOut(true);
+    }, 2000);
+
+    const completeTimer = setTimeout(() => {
+      onComplete();
+    }, 2500);
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(completeTimer);
+    };
+  }, [onComplete]);
+
+  return (
+    <div 
+      className={`fixed inset-0 z-50 bg-primary flex flex-col items-center justify-center transition-opacity duration-500 ${
+        fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}
+    >
+      <div className="text-center animate-fade-in">
+        {/* Animated Logo */}
+        <div className="relative mb-6">
+          <div className="w-24 h-24 rounded-3xl bg-primary-foreground/20 flex items-center justify-center backdrop-blur-sm">
+            <Moon className="w-12 h-12 text-primary-foreground" />
+          </div>
+        </div>
+
+        {/* App Name */}
+        <h1 className="text-4xl font-bold text-primary-foreground mb-2">
+          Nūr al-Islam
+        </h1>
+        
+        {/* Arabic Name */}
+        <p className="text-xl text-primary-foreground/80 arabic">
+          نُور الإسلام
+        </p>
+
+        {/* Welcome Message */}
+        <div className="mt-8 animate-slide-up">
+          <p className="text-primary-foreground/70 text-sm">Welcome back,</p>
+          <p className="text-2xl font-semibold text-primary-foreground">
+            {profile?.full_name || 'Dear Muslim'}
+          </p>
+        </div>
+
+        {/* Loading indicator */}
+        <div className="mt-8 flex justify-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-primary-foreground/40 animate-bounce" style={{ animationDelay: '0s' }} />
+          <div className="w-2 h-2 rounded-full bg-primary-foreground/40 animate-bounce" style={{ animationDelay: '0.1s' }} />
+          <div className="w-2 h-2 rounded-full bg-primary-foreground/40 animate-bounce" style={{ animationDelay: '0.2s' }} />
+        </div>
+      </div>
+
+      {/* Bismillah at bottom */}
+      <div className="absolute bottom-12 text-center">
         <p className="text-primary-foreground/60 arabic text-lg">
           بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
         </p>

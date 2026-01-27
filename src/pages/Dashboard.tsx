@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PrayerTimesCard } from '@/components/PrayerTimesCard';
 import { DailyVerse } from '@/components/DailyVerse';
+import { LoginSplashScreen } from '@/components/SplashScreen';
 import { useHijriDate } from '@/hooks/useHijriDate';
 import { usePrayerTimesWithLocation } from '@/hooks/usePrayerTimes';
 import { 
@@ -17,22 +18,32 @@ import {
   Star,
   LogOut,
   Settings,
-  ChevronRight
+  ChevronRight,
+  Calculator,
+  Sun
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const Dashboard = () => {
-  const { user, profile, isLoading, signOut } = useAuth();
+  const { user, profile, isLoading, signOut, justLoggedIn, setJustLoggedIn } = useAuth();
   const navigate = useNavigate();
   const { data: hijriDate, isLoading: hijriLoading } = useHijriDate();
   const { prayerData } = usePrayerTimesWithLocation();
   const [greeting, setGreeting] = useState('');
+  const [showSplash, setShowSplash] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
       navigate('/auth');
     }
   }, [user, isLoading, navigate]);
+
+  // Show splash screen after login
+  useEffect(() => {
+    if (justLoggedIn && user) {
+      setShowSplash(true);
+    }
+  }, [justLoggedIn, user]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -45,10 +56,19 @@ const Dashboard = () => {
     }
   }, []);
 
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    setJustLoggedIn(false);
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
+
+  if (showSplash) {
+    return <LoginSplashScreen onComplete={handleSplashComplete} />;
+  }
 
   if (isLoading) {
     return (
@@ -72,7 +92,9 @@ const Dashboard = () => {
     { name: "Read Qur'an", icon: BookOpen, path: '/quran', color: 'text-primary' },
     { name: 'Prayer Times', icon: Moon, path: '/prayers', color: 'text-primary' },
     { name: 'Duas', icon: Heart, path: '/duas', color: 'text-primary' },
+    { name: 'Azkar', icon: Sun, path: '/azkar', color: 'text-primary' },
     { name: 'Dhikr', icon: Compass, path: '/dhikr', color: 'text-primary' },
+    { name: 'Zakat', icon: Calculator, path: '/zakat', color: 'text-primary' },
     { name: 'Ramadan', icon: Star, path: '/ramadan', color: 'text-gold' },
   ];
 
@@ -127,7 +149,7 @@ const Dashboard = () => {
         {/* Quick Links */}
         <section className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <h2 className="text-lg font-semibold text-foreground mb-4">Quick Access</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
             {quickLinks.map((link) => (
               <Link key={link.path} to={link.path}>
                 <Card variant="interactive" className="h-full">
@@ -149,17 +171,17 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-charcoal/60 text-sm mb-1">Next Prayer</p>
-                  <h3 className="text-2xl font-bold text-charcoal">
+                  <p className="text-accent-foreground/60 text-sm mb-1">Next Prayer</p>
+                  <h3 className="text-2xl font-bold text-accent-foreground">
                     {prayerData.nextPrayer.name}
                     <span className="arabic ml-2 text-lg">{prayerData.nextPrayer.arabicName}</span>
                   </h3>
-                  <p className="text-charcoal/70 mt-1">
+                  <p className="text-accent-foreground/70 mt-1">
                     {prayerData.nextPrayer.time} • in {prayerData.timeToNextPrayer}
                   </p>
                 </div>
-                <div className="w-16 h-16 rounded-2xl bg-charcoal/10 flex items-center justify-center">
-                  <Moon className="w-8 h-8 text-charcoal/70" />
+                <div className="w-16 h-16 rounded-2xl bg-accent-foreground/10 flex items-center justify-center">
+                  <Moon className="w-8 h-8 text-accent-foreground/70" />
                 </div>
               </div>
             </CardContent>
@@ -218,20 +240,13 @@ const Dashboard = () => {
                   </p>
                   <p className="text-sm text-muted-foreground">Day Streak</p>
                 </div>
-                <div className="p-4 rounded-xl bg-gold/10 text-center">
-                  <p className="text-3xl font-bold text-gold">
+                <div className="p-4 rounded-xl bg-accent/10 text-center">
+                  <p className="text-3xl font-bold text-accent">
                     {profile?.quran_last_surah || 1}
                   </p>
                   <p className="text-sm text-muted-foreground">Surahs Read</p>
                 </div>
               </div>
-              
-              <Link to="/settings" className="mt-4 block">
-                <Button variant="subtle" className="w-full">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
-                </Button>
-              </Link>
             </CardContent>
           </Card>
         </section>

@@ -14,6 +14,8 @@ import Dhikr from "./pages/Dhikr";
 import Ramadan from "./pages/Ramadan";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Zakat from "./pages/Zakat";
+import Azkar from "./pages/Azkar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +38,8 @@ const App = () => (
               <Route path="/duas" element={<Duas />} />
               <Route path="/dhikr" element={<Dhikr />} />
               <Route path="/ramadan" element={<Ramadan />} />
+              <Route path="/zakat" element={<Zakat />} />
+              <Route path="/azkar" element={<Azkar />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
