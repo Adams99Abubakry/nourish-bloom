@@ -21,7 +21,21 @@ export const useContinuousAudio = (
   });
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const nextAudioRef = useRef<HTMLAudioElement | null>(null);
   const isAutoPlaying = useRef(false);
+
+  // Preload the next verse audio
+  const preloadNextVerse = useCallback((currentVerseNum: number) => {
+    if (currentVerseNum < totalVerses) {
+      const nextUrl = getAudioUrl(surahNumber, currentVerseNum + 1, reciterIdentifier);
+      if (!nextAudioRef.current) {
+        nextAudioRef.current = new Audio();
+      }
+      nextAudioRef.current.src = nextUrl;
+      nextAudioRef.current.preload = 'auto';
+      nextAudioRef.current.load();
+    }
+  }, [surahNumber, totalVerses, reciterIdentifier]);
 
   const loadVerse = useCallback((verseNumber: number) => {
     if (!audioRef.current) {
@@ -30,10 +44,14 @@ export const useContinuousAudio = (
     
     const url = getAudioUrl(surahNumber, verseNumber, reciterIdentifier);
     audioRef.current.src = url;
+    audioRef.current.preload = 'auto';
     audioRef.current.load();
     
     setState(prev => ({ ...prev, currentVerse: verseNumber, progress: 0 }));
-  }, [surahNumber, reciterIdentifier]);
+    
+    // Preload next verse
+    preloadNextVerse(verseNumber);
+  }, [surahNumber, reciterIdentifier, preloadNextVerse]);
 
   const play = useCallback(() => {
     if (!audioRef.current) {
@@ -41,19 +59,18 @@ export const useContinuousAudio = (
       loadVerse(state.currentVerse);
     }
     
-    // Ensure audio is loaded before playing
     const audio = audioRef.current;
-    if (audio.readyState >= 2) {
+    
+    const startPlayback = () => {
       audio.play().catch(console.error);
       isAutoPlaying.current = true;
       setState(prev => ({ ...prev, isPlaying: true }));
+    };
+    
+    if (audio.readyState >= 2) {
+      startPlayback();
     } else {
-      audio.addEventListener('canplaythrough', function onCanPlay() {
-        audio.removeEventListener('canplaythrough', onCanPlay);
-        audio.play().catch(console.error);
-        isAutoPlaying.current = true;
-        setState(prev => ({ ...prev, isPlaying: true }));
-      }, { once: true });
+      audio.addEventListener('canplaythrough', startPlayback, { once: true });
       audio.load();
     }
   }, [state.currentVerse, loadVerse]);
@@ -76,15 +93,32 @@ export const useContinuousAudio = (
 
   const goToVerse = useCallback((verseNumber: number) => {
     const wasPlaying = state.isPlaying;
-    loadVerse(verseNumber);
     
-    if (wasPlaying) {
-      // Reduced delay for quicker response
-      setTimeout(() => {
-        audioRef.current?.play().catch(console.error);
-      }, 50);
+    // Use preloaded audio if available for the next verse
+    if (nextAudioRef.current && verseNumber === state.currentVerse + 1) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      audioRef.current = nextAudioRef.current;
+      nextAudioRef.current = null;
+      setState(prev => ({ ...prev, currentVerse: verseNumber, progress: 0 }));
+      preloadNextVerse(verseNumber);
+      
+      if (wasPlaying) {
+        audioRef.current.play().catch(console.error);
+      }
+    } else {
+      loadVerse(verseNumber);
+      if (wasPlaying) {
+        const audio = audioRef.current;
+        if (audio) {
+          audio.addEventListener('canplaythrough', () => {
+            audio.play().catch(console.error);
+          }, { once: true });
+        }
+      }
     }
-  }, [state.isPlaying, loadVerse]);
+  }, [state.isPlaying, state.currentVerse, loadVerse, preloadNextVerse]);
 
   const nextVerse = useCallback(() => {
     if (state.currentVerse < totalVerses) {
@@ -112,15 +146,25 @@ export const useContinuousAudio = (
     };
 
     const handleEnded = () => {
-      // Auto-play next verse if we were auto-playing
       if (isAutoPlaying.current && state.currentVerse < totalVerses) {
         const nextVerseNum = state.currentVerse + 1;
-        loadVerse(nextVerseNum);
         
-        // Reduced delay for smoother continuous playback
-        setTimeout(() => {
-          audio.play().catch(console.error);
-        }, 50);
+        // Use preloaded audio for seamless transition
+        if (nextAudioRef.current) {
+          audioRef.current = nextAudioRef.current;
+          nextAudioRef.current = null;
+          setState(prev => ({ ...prev, currentVerse: nextVerseNum, progress: 0 }));
+          
+          // Start playing immediately and preload the next one
+          audioRef.current.play().catch(console.error);
+          preloadNextVerse(nextVerseNum);
+        } else {
+          // Fallback: load and play
+          loadVerse(nextVerseNum);
+          setTimeout(() => {
+            audioRef.current?.play().catch(console.error);
+          }, 10);
+        }
       } else {
         setState(prev => ({ ...prev, isPlaying: false }));
         isAutoPlaying.current = false;
@@ -140,7 +184,7 @@ export const useContinuousAudio = (
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
-  }, [state.currentVerse, totalVerses, loadVerse]);
+  }, [state.currentVerse, totalVerses, loadVerse, preloadNextVerse]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -149,6 +193,9 @@ export const useContinuousAudio = (
         audioRef.current.pause();
         audioRef.current = null;
       }
+      if (nextAudioRef.current) {
+        nextAudioRef.current = null;
+      }
     };
   }, []);
 
@@ -156,6 +203,9 @@ export const useContinuousAudio = (
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.pause();
+    }
+    if (nextAudioRef.current) {
+      nextAudioRef.current = null;
     }
     setState({
       isPlaying: false,
