@@ -13,13 +13,13 @@ export function Footer() {
             In the name of Allah, the Most Gracious, the Most Merciful
           </p>
           
-          {/* Developer credit with animation */}
+          {/* Developer credit */}
           <div className="flex items-center justify-center gap-2 pt-4">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 animate-pulse-subtle">
-              <Moon className="w-4 h-4 text-primary animate-float" />
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50">
+              <Moon className="w-4 h-4 text-primary" />
               <span className="text-sm text-muted-foreground">
-                Developed with 💚 by{" "}
-                <span className="font-semibold text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-shimmer">
+                Developed by{" "}
+                <span className="font-semibold text-foreground">
                   DevSiddique
                 </span>
               </span>

@@ -8,7 +8,7 @@ interface SplashScreenProps {
   duration?: number;
 }
 
-export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps) {
+export function SplashScreen({ onComplete, duration = 4000 }: SplashScreenProps) {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
@@ -83,11 +83,11 @@ export function LoginSplashScreen({ onComplete }: { onComplete: () => void }) {
   useEffect(() => {
     const fadeTimer = setTimeout(() => {
       setFadeOut(true);
-    }, 2000);
+    }, 3500);
 
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, 2500);
+    }, 4000);
 
     return () => {
       clearTimeout(fadeTimer);

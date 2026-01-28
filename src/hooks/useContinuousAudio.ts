@@ -41,9 +41,21 @@ export const useContinuousAudio = (
       loadVerse(state.currentVerse);
     }
     
-    audioRef.current.play().catch(console.error);
-    isAutoPlaying.current = true;
-    setState(prev => ({ ...prev, isPlaying: true }));
+    // Ensure audio is loaded before playing
+    const audio = audioRef.current;
+    if (audio.readyState >= 2) {
+      audio.play().catch(console.error);
+      isAutoPlaying.current = true;
+      setState(prev => ({ ...prev, isPlaying: true }));
+    } else {
+      audio.addEventListener('canplaythrough', function onCanPlay() {
+        audio.removeEventListener('canplaythrough', onCanPlay);
+        audio.play().catch(console.error);
+        isAutoPlaying.current = true;
+        setState(prev => ({ ...prev, isPlaying: true }));
+      }, { once: true });
+      audio.load();
+    }
   }, [state.currentVerse, loadVerse]);
 
   const pause = useCallback(() => {
@@ -67,9 +79,10 @@ export const useContinuousAudio = (
     loadVerse(verseNumber);
     
     if (wasPlaying) {
+      // Reduced delay for quicker response
       setTimeout(() => {
         audioRef.current?.play().catch(console.error);
-      }, 100);
+      }, 50);
     }
   }, [state.isPlaying, loadVerse]);
 
@@ -104,9 +117,10 @@ export const useContinuousAudio = (
         const nextVerseNum = state.currentVerse + 1;
         loadVerse(nextVerseNum);
         
+        // Reduced delay for smoother continuous playback
         setTimeout(() => {
           audio.play().catch(console.error);
-        }, 300);
+        }, 50);
       } else {
         setState(prev => ({ ...prev, isPlaying: false }));
         isAutoPlaying.current = false;
