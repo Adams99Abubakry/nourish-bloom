@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { duas } from "@/data/quranData";
 import { azkarCategories } from "@/data/hisnulMuslimData";
 import { HandHelping, Heart, Volume2, Pause, Sun, Moon, BookOpen } from "lucide-react";
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
@@ -24,7 +24,11 @@ const Duas = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [favorites, setFavorites] = useState<number[]>([]);
   const [playingId, setPlayingId] = useState<number | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playingIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    playingIdRef.current = playingId;
+  }, [playingId]);
 
   const filteredDuas = duas.filter(
     (dua) => selectedCategory === "all" || dua.category === selectedCategory
@@ -36,41 +40,66 @@ const Duas = () => {
     );
   };
 
+  const speakArabic = async (text: string, id: number) => {
+    if (!("speechSynthesis" in window)) return false;
+
+    const synth = window.speechSynthesis;
+    synth.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "ar";
+    utterance.rate = 0.9;
+
+    const pickArabicVoice = () => {
+      const voices = synth.getVoices();
+      const voice =
+        voices.find((v) => v.lang?.toLowerCase().startsWith("ar")) ||
+        voices.find((v) => /arabic/i.test(v.name));
+      if (voice) utterance.voice = voice;
+    };
+
+    // iOS/Safari often needs voices to be loaded asynchronously.
+    pickArabicVoice();
+    if (!utterance.voice && synth.getVoices().length === 0) {
+      await new Promise<void>((resolve) => {
+        const handler = () => {
+          synth.removeEventListener("voiceschanged", handler);
+          pickArabicVoice();
+          resolve();
+        };
+        synth.addEventListener("voiceschanged", handler);
+        setTimeout(() => {
+          synth.removeEventListener("voiceschanged", handler);
+          pickArabicVoice();
+          resolve();
+        }, 1200);
+      });
+    }
+
+    utterance.onend = () => {
+      if (playingIdRef.current === id) setPlayingId(null);
+    };
+    utterance.onerror = () => {
+      if (playingIdRef.current === id) setPlayingId(null);
+    };
+
+    synth.speak(utterance);
+    return true;
+  };
+
   // Simple TTS for dua reading
   const playDua = async (dua: typeof duas[0]) => {
     if (playingId === dua.id) {
-      // Stop playing
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
       window.speechSynthesis?.cancel();
       setPlayingId(null);
-    } else {
-      // Stop any current playback
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      window.speechSynthesis?.cancel();
-
-      // Use speech synthesis for Arabic reading
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(dua.arabic);
-        utterance.lang = 'ar-SA';
-        utterance.rate = 0.8;
-        
-        utterance.onend = () => {
-          setPlayingId(null);
-        };
-        
-        utterance.onerror = () => {
-          setPlayingId(null);
-        };
-
-        window.speechSynthesis.speak(utterance);
-        setPlayingId(dua.id);
-      }
+      return;
     }
+
+    window.speechSynthesis?.cancel();
+    setPlayingId(dua.id);
+
+    const ok = await speakArabic(dua.arabic, dua.id);
+    if (!ok) setPlayingId(null);
   };
 
   return (

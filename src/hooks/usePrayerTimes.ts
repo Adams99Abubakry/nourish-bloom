@@ -132,16 +132,12 @@ const getUserPreferredLocation = async (userId: string): Promise<Location | null
 };
 
 // Get user's location from geolocation API
-const getGeoLocation = (): Promise<Location> => {
+// NOTE: We do NOT default to a fixed city (e.g., Mecca) because it confuses users.
+// If we can't access geolocation, we return null and ask the user to enable it.
+const getGeoLocation = (): Promise<Location | null> => {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      // Default to Mecca if geolocation not available
-      resolve({
-        latitude: 21.4225,
-        longitude: 39.8262,
-        city: "Mecca",
-        country: "Saudi Arabia",
-      });
+      resolve(null);
       return;
     }
 
@@ -171,15 +167,7 @@ const getGeoLocation = (): Promise<Location> => {
           });
         }
       },
-      () => {
-        // Default to Mecca on error
-        resolve({
-          latitude: 21.4225,
-          longitude: 39.8262,
-          city: "Mecca",
-          country: "Saudi Arabia",
-        });
-      },
+      () => resolve(null),
       { timeout: 10000 }
     );
   });
@@ -204,9 +192,9 @@ export const useLocation = () => {
         }
       }
       
-      // Fall back to geolocation
-      const geoLocation = await getGeoLocation();
-      setLocation(geoLocation);
+       // Fall back to geolocation
+       const geoLocation = await getGeoLocation();
+       setLocation(geoLocation);
       setLoading(false);
     };
 
