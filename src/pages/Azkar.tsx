@@ -4,15 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { azkarCategories, type Azkar as AzkarType } from "@/data/hisnulMuslimData";
-import { Sun, Moon, BookOpen, Play, Pause, Check, Volume2 } from "lucide-react";
-import { useState, useRef } from "react";
+import { Sun, Moon, BookOpen, Check } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const Azkar = () => {
   const [selectedCategory, setSelectedCategory] = useState("morning");
   const [completedAzkar, setCompletedAzkar] = useState<Record<string, number>>({});
-  const [playingId, setPlayingId] = useState<number | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const getCategoryIcon = (id: string) => {
     switch (id) {
@@ -53,36 +51,6 @@ const Azkar = () => {
 
   const isComplete = (azkarId: number, maxCount: number) => {
     return getCount(azkarId) >= maxCount;
-  };
-
-  const playAudio = async (azkar: AzkarType) => {
-    if (!azkar.audioUrl) return;
-
-    if (playingId === azkar.id) {
-      // Stop playing
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-      setPlayingId(null);
-    } else {
-      // Start playing
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      
-      audioRef.current = new Audio(azkar.audioUrl);
-      audioRef.current.onended = () => setPlayingId(null);
-      audioRef.current.onerror = () => setPlayingId(null);
-      
-      try {
-        await audioRef.current.play();
-        setPlayingId(azkar.id);
-      } catch (error) {
-        console.error("Failed to play audio:", error);
-        setPlayingId(null);
-      }
-    }
   };
 
   const getTotalProgress = () => {
@@ -184,22 +152,6 @@ const Azkar = () => {
                             </p>
                           </div>
                         </div>
-                        {azkar.audioUrl && (
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => playAudio(azkar)}
-                            className={cn(
-                              playingId === azkar.id && "bg-primary/10 text-primary"
-                            )}
-                          >
-                            {playingId === azkar.id ? (
-                              <Pause className="w-4 h-4" />
-                            ) : (
-                              <Volume2 className="w-4 h-4" />
-                            )}
-                          </Button>
-                        )}
                       </div>
 
                       {/* Arabic Text */}
