@@ -49,17 +49,17 @@ const actions = [
 
 export function QuickActions() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-3">
       {actions.map((action) => (
         <Link key={action.path} to={action.path}>
           <Card variant="interactive" className="h-full">
-            <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <action.icon className="w-6 h-6 text-primary" />
+            <CardContent className="p-2 sm:p-3 md:p-4 flex flex-col items-center text-center gap-1 sm:gap-2">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center">
+                <action.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
-              <div>
-                <h3 className="font-medium text-sm text-foreground">{action.label}</h3>
-                <p className="text-xs text-muted-foreground">{action.description}</p>
+              <div className="min-w-0">
+                <h3 className="font-medium text-xs sm:text-sm text-foreground truncate">{action.label}</h3>
+                <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">{action.description}</p>
               </div>
             </CardContent>
           </Card>

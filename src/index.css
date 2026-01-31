@@ -131,25 +131,47 @@
     font-family: 'Inter', system-ui, sans-serif;
   }
 
-  /* Arabic text styling */
+  /* Arabic text styling - responsive */
   .arabic {
     font-family: 'Amiri', serif;
     direction: rtl;
     line-height: 2.2;
+    font-size: 1rem;
   }
 
   .arabic-lg {
     font-family: 'Amiri', serif;
     direction: rtl;
     line-height: 2.4;
-    font-size: 1.75rem;
+    font-size: 1.25rem;
   }
 
   .arabic-xl {
     font-family: 'Amiri', serif;
     direction: rtl;
     line-height: 2.5;
-    font-size: 2.25rem;
+    font-size: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .arabic {
+      font-size: 1.125rem;
+    }
+    .arabic-lg {
+      font-size: 1.75rem;
+    }
+    .arabic-xl {
+      font-size: 2rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .arabic-lg {
+      font-size: 1.875rem;
+    }
+    .arabic-xl {
+      font-size: 2.25rem;
+    }
   }
 }
 
@@ -318,5 +340,93 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--primary) / 0.5);
+  }
+}
+
+/* Responsive utilities */
+@layer utilities {
+  .container-fluid {
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-fluid {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-fluid {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  /* Safe area insets for mobile devices */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+
+  /* Touch-friendly tap targets */
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Responsive text sizes */
+  .text-responsive-xs {
+    font-size: 0.75rem;
+  }
+  .text-responsive-sm {
+    font-size: 0.875rem;
+  }
+  .text-responsive-base {
+    font-size: 0.875rem;
+  }
+  .text-responsive-lg {
+    font-size: 1rem;
+  }
+  .text-responsive-xl {
+    font-size: 1.125rem;
+  }
+  .text-responsive-2xl {
+    font-size: 1.25rem;
+  }
+  .text-responsive-3xl {
+    font-size: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .text-responsive-base {
+      font-size: 1rem;
+    }
+    .text-responsive-lg {
+      font-size: 1.125rem;
+    }
+    .text-responsive-xl {
+      font-size: 1.25rem;
+    }
+    .text-responsive-2xl {
+      font-size: 1.5rem;
+    }
+    .text-responsive-3xl {
+      font-size: 1.875rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .text-responsive-2xl {
+      font-size: 1.875rem;
+    }
+    .text-responsive-3xl {
+      font-size: 2.25rem;
+    }
   }
 }

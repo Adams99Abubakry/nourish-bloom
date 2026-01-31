@@ -81,19 +81,19 @@ const SurahReader = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
         {/* Surah Header */}
-        <Card variant="spiritual" className="mb-6 overflow-hidden animate-fade-in">
-          <CardContent className="p-6 text-center relative">
+        <Card variant="spiritual" className="mb-4 sm:mb-6 overflow-hidden animate-fade-in">
+          <CardContent className="p-4 sm:p-6 text-center relative">
             <div className="absolute inset-0 islamic-pattern opacity-20" />
             <div className="relative">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary-foreground/20 mb-4">
-                <span className="text-primary-foreground font-bold">{currentSurah.number}</span>
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-primary-foreground/20 mb-3 sm:mb-4">
+                <span className="text-primary-foreground font-bold text-sm sm:text-base">{currentSurah.number}</span>
               </div>
-              <h1 className="arabic-xl text-primary-foreground mb-2">{currentSurah.name}</h1>
-              <p className="text-lg text-primary-foreground font-medium">{currentSurah.englishName}</p>
-              <p className="text-primary-foreground/70 text-sm">{currentSurah.englishNameTranslation}</p>
-              <div className="flex items-center justify-center gap-4 mt-4 text-sm text-primary-foreground/60">
+              <h1 className="arabic-xl text-primary-foreground mb-1 sm:mb-2">{currentSurah.name}</h1>
+              <p className="text-base sm:text-lg text-primary-foreground font-medium">{currentSurah.englishName}</p>
+              <p className="text-primary-foreground/70 text-xs sm:text-sm">{currentSurah.englishNameTranslation}</p>
+              <div className="flex items-center justify-center gap-2 sm:gap-4 mt-3 sm:mt-4 text-xs sm:text-sm text-primary-foreground/60">
                 <span>{currentSurah.revelationType}</span>
                 <span>•</span>
                 <span>{currentSurah.numberOfAyahs} Verses</span>
@@ -103,30 +103,31 @@ const SurahReader = () => {
         </Card>
 
         {/* Continuous Audio Player */}
-        <Card variant="elevated" className="mb-6 animate-slide-up">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
+        <Card variant="elevated" className="mb-4 sm:mb-6 animate-slide-up">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {/* Playback Controls */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={previousVerse}
                   disabled={currentVerse <= 1}
+                  className="w-8 h-8 sm:w-9 sm:h-9"
                 >
-                  <SkipBack className="w-4 h-4" />
+                  <SkipBack className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </Button>
                 
                 <Button
                   variant="spiritual"
                   size="icon"
-                  className="w-12 h-12 rounded-full"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full"
                   onClick={togglePlay}
                 >
                   {isPlaying ? (
-                    <Pause className="w-5 h-5" />
+                    <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
                   ) : (
-                    <Play className="w-5 h-5 ml-0.5" />
+                    <Play className="w-4 h-4 sm:w-5 sm:h-5 ml-0.5" />
                   )}
                 </Button>
                 
@@ -135,22 +136,23 @@ const SurahReader = () => {
                   size="icon"
                   onClick={nextVerse}
                   disabled={currentVerse >= currentSurah.numberOfAyahs}
+                  className="w-8 h-8 sm:w-9 sm:h-9"
                 >
-                  <SkipForward className="w-4 h-4" />
+                  <SkipForward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </Button>
               </div>
 
               {/* Progress Info */}
-              <div className="flex-1">
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="text-foreground font-medium">
-                    Verse {currentVerse} of {currentSurah.numberOfAyahs}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between text-xs sm:text-sm mb-1 gap-2">
+                  <span className="text-foreground font-medium truncate">
+                    Verse {currentVerse}/{currentSurah.numberOfAyahs}
                   </span>
-                  <span className="text-muted-foreground">
-                    {formatTime(progress)} / {formatTime(duration || 0)}
+                  <span className="text-muted-foreground shrink-0">
+                    {formatTime(progress)}/{formatTime(duration || 0)}
                   </span>
                 </div>
-                <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                <div className="h-1 sm:h-1.5 bg-secondary rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-primary transition-all duration-300"
                     style={{ width: `${duration ? (progress / duration) * 100 : 0}%` }}
@@ -159,12 +161,12 @@ const SurahReader = () => {
               </div>
 
               {/* Volume Indicator */}
-              <Volume2 className="w-5 h-5 text-muted-foreground hidden sm:block" />
+              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground hidden md:block" />
             </div>
 
             {/* Play All Info */}
-            <p className="text-xs text-muted-foreground text-center mt-3">
-              {isPlaying ? "Playing continuously • Click any verse to jump" : "Click play to listen to the entire Surah continuously"}
+            <p className="text-[10px] sm:text-xs text-muted-foreground text-center mt-2 sm:mt-3">
+              {isPlaying ? "Playing continuously • Click any verse to jump" : "Click play to listen to the entire Surah"}
             </p>
           </CardContent>
         </Card>

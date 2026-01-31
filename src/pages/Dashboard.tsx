@@ -150,16 +150,16 @@ const Dashboard = () => {
 
         {/* Quick Links */}
         <section className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Quick Access</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">Quick Access</h2>
+          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-2 sm:gap-3">
             {quickLinks.map((link) => (
               <Link key={link.path} to={link.path}>
                 <Card variant="interactive" className="h-full">
-                  <CardContent className="p-4 flex flex-col items-center text-center">
-                    <div className={`w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 ${link.color}`}>
-                      <link.icon className="w-6 h-6" />
+                  <CardContent className="p-2 sm:p-3 md:p-4 flex flex-col items-center text-center">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center mb-1.5 sm:mb-3 ${link.color}`}>
+                      <link.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
-                    <span className="text-sm font-medium text-foreground">{link.name}</span>
+                    <span className="text-[10px] sm:text-sm font-medium text-foreground truncate w-full">{link.name}</span>
                   </CardContent>
                 </Card>
               </Link>

@@ -121,46 +121,46 @@ const Zakat = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
         {/* Header */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-            <Calculator className="w-8 h-8 text-primary" />
+        <div className="text-center mb-6 sm:mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-primary/10 mb-3 sm:mb-4">
+            <Calculator className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Zakat Calculator</h1>
-          <p className="text-muted-foreground">حاسبة الزكاة</p>
-          <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">Zakat Calculator</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">حاسبة الزكاة</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2 max-w-md mx-auto px-4">
             Calculate your annual zakat based on your savings, gold, silver, and other assets
           </p>
         </div>
 
         {/* Nisab Information */}
-        <Card variant="spiritual" className="mb-6 animate-slide-up overflow-hidden">
-          <CardContent className="p-6 relative">
+        <Card variant="spiritual" className="mb-4 sm:mb-6 animate-slide-up overflow-hidden">
+          <CardContent className="p-4 sm:p-6 relative">
             <div className="absolute inset-0 islamic-pattern opacity-20" />
             <div className="relative">
-              <div className="flex items-center gap-2 mb-4">
-                <Info className="w-5 h-5 text-primary-foreground" />
-                <h3 className="font-semibold text-primary-foreground">Current Nisab Thresholds</h3>
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <Info className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
+                <h3 className="font-semibold text-primary-foreground text-sm sm:text-base">Current Nisab Thresholds</h3>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-primary-foreground">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 text-primary-foreground">
                 <div>
-                  <p className="text-sm text-primary-foreground/70">Gold Nisab ({NISAB_GOLD_GRAMS}g)</p>
-                  <p className="text-xl font-bold">{formatCurrency(calculations.nisabGold)}</p>
+                  <p className="text-xs sm:text-sm text-primary-foreground/70">Gold Nisab ({NISAB_GOLD_GRAMS}g)</p>
+                  <p className="text-lg sm:text-xl font-bold">{formatCurrency(calculations.nisabGold)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-primary-foreground/70">Silver Nisab ({NISAB_SILVER_GRAMS}g)</p>
-                  <p className="text-xl font-bold">{formatCurrency(calculations.nisabSilver)}</p>
+                  <p className="text-xs sm:text-sm text-primary-foreground/70">Silver Nisab ({NISAB_SILVER_GRAMS}g)</p>
+                  <p className="text-lg sm:text-xl font-bold">{formatCurrency(calculations.nisabSilver)}</p>
                 </div>
               </div>
-              <p className="text-xs text-primary-foreground/60 mt-4">
+              <p className="text-[10px] sm:text-xs text-primary-foreground/60 mt-3 sm:mt-4">
                 * Prices are approximate. Please verify current gold/silver prices for accurate calculations.
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Assets Input */}
           <Card variant="elevated" className="animate-slide-up">
             <CardHeader>
