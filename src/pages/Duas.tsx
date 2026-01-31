@@ -106,47 +106,47 @@ const Duas = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Header */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-            <HandHelping className="w-8 h-8 text-primary" />
+        <div className="text-center mb-6 sm:mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-primary/10 mb-3 sm:mb-4">
+            <HandHelping className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Duas & Supplications</h1>
-          <p className="text-muted-foreground">الأدعية والأذكار</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">Duas & Supplications</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">الأدعية والأذكار</p>
         </div>
 
         {/* Quick Links to Azkar */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 animate-slide-up">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6 animate-slide-up">
           <Link to="/azkar">
             <Card variant="spiritual" className="overflow-hidden hover:scale-[1.02] transition-transform">
-              <CardContent className="p-4 flex items-center gap-3">
-                <Sun className="w-6 h-6 text-primary-foreground" />
-                <div>
-                  <p className="font-medium text-primary-foreground text-sm">Morning Azkar</p>
-                  <p className="text-xs text-primary-foreground/70">أذكار الصباح</p>
+              <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+                <Sun className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-primary-foreground text-xs sm:text-sm truncate">Morning Azkar</p>
+                  <p className="text-[10px] sm:text-xs text-primary-foreground/70 arabic">أذكار الصباح</p>
                 </div>
               </CardContent>
             </Card>
           </Link>
           <Link to="/azkar">
             <Card variant="spiritual" className="overflow-hidden hover:scale-[1.02] transition-transform">
-              <CardContent className="p-4 flex items-center gap-3">
-                <Moon className="w-6 h-6 text-primary-foreground" />
-                <div>
-                  <p className="font-medium text-primary-foreground text-sm">Evening Azkar</p>
-                  <p className="text-xs text-primary-foreground/70">أذكار المساء</p>
+              <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+                <Moon className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-primary-foreground text-xs sm:text-sm truncate">Evening Azkar</p>
+                  <p className="text-[10px] sm:text-xs text-primary-foreground/70 arabic">أذكار المساء</p>
                 </div>
               </CardContent>
             </Card>
           </Link>
           <Link to="/azkar" className="col-span-2 sm:col-span-1">
             <Card variant="elevated" className="overflow-hidden hover:scale-[1.02] transition-transform">
-              <CardContent className="p-4 flex items-center gap-3">
-                <BookOpen className="w-6 h-6 text-primary" />
-                <div>
-                  <p className="font-medium text-foreground text-sm">Hisnul Muslim</p>
-                  <p className="text-xs text-muted-foreground">Full Collection</p>
+              <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground text-xs sm:text-sm truncate">Hisnul Muslim</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Full Collection</p>
                 </div>
               </CardContent>
             </Card>
@@ -154,14 +154,14 @@ const Duas = () => {
         </div>
 
         {/* Category Filter */}
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide animate-slide-up">
+        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-3 sm:pb-4 mb-4 sm:mb-6 scrollbar-hide animate-slide-up">
           {categories.map((cat) => (
             <Button
               key={cat.id}
               variant={selectedCategory === cat.id ? "default" : "subtle"}
               size="sm"
               onClick={() => setSelectedCategory(cat.id)}
-              className="shrink-0"
+              className="shrink-0 text-xs sm:text-sm px-2.5 sm:px-3"
             >
               {cat.label}
             </Button>

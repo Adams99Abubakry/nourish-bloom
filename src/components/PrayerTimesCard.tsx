@@ -70,28 +70,28 @@ export function PrayerTimesCard() {
 
   return (
     <Card variant="elevated" className="overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-primary" />
+      <CardHeader className="pb-2 px-3 sm:px-6">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-base sm:text-lg">
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             Prayer Times
           </CardTitle>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="w-3 h-3" />
-            <span>{location?.city || "Unknown"}</span>
+          <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground">
+            <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+            <span className="truncate max-w-[80px] sm:max-w-none">{location?.city || "Unknown"}</span>
           </div>
         </div>
         {prayerData.hijriDate && (
-          <p className="text-xs text-muted-foreground mt-1">{prayerData.hijriDate}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{prayerData.hijriDate}</p>
         )}
       </CardHeader>
-      <CardContent className="pt-2">
-        <div className="space-y-2">
+      <CardContent className="pt-2 px-3 sm:px-6">
+        <div className="space-y-1.5 sm:space-y-2">
           {prayersWithStatus.map((prayer) => (
             <div
               key={prayer.name}
               className={cn(
-                "flex items-center justify-between p-3 rounded-xl transition-all",
+                "flex items-center justify-between p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all",
                 prayer.name === nextPrayer.name
                   ? "bg-primary text-primary-foreground shadow-glow"
                   : prayer.isPast
@@ -99,23 +99,23 @@ export function PrayerTimesCard() {
                   : "bg-secondary/50"
               )}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <span className={cn(
-                  "font-arabic text-lg",
+                  "font-arabic text-sm sm:text-lg shrink-0",
                   prayer.name === nextPrayer.name ? "text-primary-foreground" : "text-foreground"
                 )}>
                   {prayer.arabicName}
                 </span>
-                <span className="text-sm font-medium">{prayer.name}</span>
+                <span className="text-xs sm:text-sm font-medium truncate">{prayer.name}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 {prayer.name === nextPrayer.name && prayerData.timeToNextPrayer && (
-                  <span className="text-xs bg-primary-foreground/20 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] sm:text-xs bg-primary-foreground/20 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                     in {prayerData.timeToNextPrayer}
                   </span>
                 )}
                 <span className={cn(
-                  "font-semibold tabular-nums",
+                  "font-semibold tabular-nums text-sm sm:text-base",
                   prayer.name === nextPrayer.name ? "text-primary-foreground" : ""
                 )}>
                   {prayer.time}

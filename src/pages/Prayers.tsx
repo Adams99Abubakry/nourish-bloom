@@ -198,45 +198,45 @@ const Prayers = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Header */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-            <Clock className="w-8 h-8 text-primary" />
+        <div className="text-center mb-6 sm:mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-primary/10 mb-3 sm:mb-4">
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Prayer Times</h1>
-          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">Prayer Times</h1>
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-muted-foreground text-sm">
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                 <span>Detecting location...</span>
               </>
             ) : (
               <>
-                <MapPin className="w-4 h-4" />
-                <span>{location?.city}{location?.country ? `, ${location.country}` : ""}</span>
+                <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="truncate max-w-[200px]">{location?.city}{location?.country ? `, ${location.country}` : ""}</span>
               </>
             )}
           </div>
           {prayerData?.hijriDate && (
-            <p className="text-sm text-muted-foreground mt-1">{prayerData.hijriDate}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{prayerData.hijriDate}</p>
           )}
         </div>
 
         {/* Adhan Status Banner */}
         {isPlaying && (
-          <Card variant="spiritual" className="mb-6 animate-slide-up overflow-hidden">
-            <CardContent className="p-4 relative">
+          <Card variant="spiritual" className="mb-4 sm:mb-6 animate-slide-up overflow-hidden">
+            <CardContent className="p-3 sm:p-4 relative">
               <div className="absolute inset-0 islamic-pattern opacity-20" />
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Volume2 className="w-6 h-6 text-primary-foreground animate-pulse" />
-                  <div>
-                    <p className="font-semibold text-primary-foreground">Adhan Playing</p>
-                    <p className="text-sm text-primary-foreground/70">{currentPrayer} prayer time</p>
+              <div className="relative flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <Volume2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground animate-pulse shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-primary-foreground text-sm sm:text-base">Adhan Playing</p>
+                    <p className="text-xs sm:text-sm text-primary-foreground/70 truncate">{currentPrayer} prayer time</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={stopAdhan} className="text-primary-foreground">
+                <Button variant="ghost" size="sm" onClick={stopAdhan} className="text-primary-foreground shrink-0">
                   Stop
                 </Button>
               </div>
@@ -245,38 +245,40 @@ const Prayers = () => {
         )}
 
         {/* Adhan Settings */}
-        <Card variant="subtle" className="mb-6 animate-slide-up">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-primary" />
-                <div>
-                  <p className="font-medium text-foreground">Adhan Notifications</p>
-                  <p className="text-xs text-muted-foreground">Get notified at prayer times</p>
+        <Card variant="subtle" className="mb-4 sm:mb-6 animate-slide-up">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground text-sm sm:text-base">Adhan Notifications</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">Get notified at prayer times</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <Button
                   variant={notificationsEnabled ? "default" : "subtle"}
                   size="sm"
                   onClick={notificationsEnabled ? disableNotifications : enableNotifications}
+                  className="text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  {notificationsEnabled ? "Enabled" : "Enable"}
+                  {notificationsEnabled ? "On" : "Off"}
                 </Button>
                 <Button
                   variant={audioEnabled ? "default" : "subtle"}
                   size="icon-sm"
                   onClick={toggleAudio}
                   title={audioEnabled ? "Disable Adhan Audio" : "Enable Adhan Audio"}
+                  className="w-8 h-8"
                 >
-                  {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                  {audioEnabled ? <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                 </Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Prayer Times */}
           <div className="space-y-4 animate-slide-up">
             <Card variant="elevated">
@@ -362,76 +364,76 @@ const Prayers = () => {
           {/* Qibla Direction */}
           <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
             <Card variant="spiritual" className="h-full">
-              <CardContent className="p-8 flex flex-col items-center justify-center min-h-[400px]">
-                <Compass className="w-8 h-8 text-primary-foreground/80 mb-4" />
-                <h2 className="text-xl font-semibold text-primary-foreground mb-2">
+              <CardContent className="p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center min-h-[320px] sm:min-h-[400px]">
+                <Compass className="w-6 h-6 sm:w-8 sm:h-8 text-primary-foreground/80 mb-3 sm:mb-4" />
+                <h2 className="text-lg sm:text-xl font-semibold text-primary-foreground mb-1 sm:mb-2">
                   Qibla Direction
                 </h2>
-                <p className="text-primary-foreground/70 text-sm mb-8 text-center">
+                <p className="text-primary-foreground/70 text-xs sm:text-sm mb-4 sm:mb-8 text-center px-4">
                   Face the Kaaba in Mecca for prayer
                 </p>
 
                 {/* Compass */}
-                <div className="relative w-64 h-64">
+                <div className="relative w-44 h-44 sm:w-56 sm:h-56 md:w-64 md:h-64">
                   {/* Outer ring */}
-                  <div className="absolute inset-0 rounded-full border-4 border-primary-foreground/20" />
+                  <div className="absolute inset-0 rounded-full border-2 sm:border-4 border-primary-foreground/20" />
                   
                   {/* Direction markers */}
-                  <div className="absolute inset-4 rounded-full border-2 border-primary-foreground/10" />
+                  <div className="absolute inset-3 sm:inset-4 rounded-full border sm:border-2 border-primary-foreground/10" />
                   
                   {/* Cardinal directions */}
-                  <span className="absolute top-2 left-1/2 -translate-x-1/2 text-sm font-medium text-primary-foreground">N</span>
-                  <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-sm font-medium text-primary-foreground/60">S</span>
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm font-medium text-primary-foreground/60">W</span>
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm font-medium text-primary-foreground/60">E</span>
+                  <span className="absolute top-1.5 sm:top-2 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-medium text-primary-foreground">N</span>
+                  <span className="absolute bottom-1.5 sm:bottom-2 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-medium text-primary-foreground/60">S</span>
+                  <span className="absolute left-1.5 sm:left-2 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-primary-foreground/60">W</span>
+                  <span className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-primary-foreground/60">E</span>
 
                   {/* Qibla arrow */}
                   <div 
                     className="absolute inset-0 flex items-center justify-center transition-transform duration-300"
                     style={{ transform: `rotate(${arrowRotation}deg)` }}
                   >
-                    <div className="relative h-full flex flex-col items-center justify-start pt-8">
-                      <Navigation className="w-8 h-8 text-gold fill-gold" />
+                    <div className="relative h-full flex flex-col items-center justify-start pt-6 sm:pt-8">
+                      <Navigation className="w-6 h-6 sm:w-8 sm:h-8 text-gold fill-gold" />
                     </div>
                   </div>
 
                   {/* Center dot */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-4 h-4 rounded-full bg-primary-foreground/30" />
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-primary-foreground/30" />
                   </div>
                 </div>
 
-                <div className="mt-8 text-center">
-                  <p className="text-3xl font-bold text-primary-foreground">{qiblaDirection}°</p>
-                  <p className="text-primary-foreground/70 text-sm">{getDirectionName(qiblaDirection)}</p>
+                <div className="mt-4 sm:mt-8 text-center">
+                  <p className="text-2xl sm:text-3xl font-bold text-primary-foreground">{qiblaDirection}°</p>
+                  <p className="text-primary-foreground/70 text-xs sm:text-sm">{getDirectionName(qiblaDirection)}</p>
                   
                   {!compassAvailable && (
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="mt-4 text-primary-foreground/80 hover:text-primary-foreground"
+                      className="mt-3 sm:mt-4 text-primary-foreground/80 hover:text-primary-foreground text-xs sm:text-sm"
                       onClick={requestCompassPermission}
                     >
-                      <Compass className="w-4 h-4 mr-2" />
+                      <Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                       Enable Compass
                     </Button>
                   )}
                   
                   {compassAvailable && (
-                    <p className="text-xs text-primary-foreground/50 mt-2">
-                      ✓ Compass active - Point device north for accurate direction
+                    <p className="text-[10px] sm:text-xs text-primary-foreground/50 mt-2">
+                      ✓ Compass active - Point device north
                     </p>
                   )}
                   
                   {compassError && (
-                    <p className="text-xs text-primary-foreground/50 mt-2">
+                    <p className="text-[10px] sm:text-xs text-primary-foreground/50 mt-2">
                       {compassError}
                     </p>
                   )}
                   
                   {!location && (
-                    <p className="text-xs text-primary-foreground/50 mt-2">
-                      Enable location for accurate Qibla direction
+                    <p className="text-[10px] sm:text-xs text-primary-foreground/50 mt-2">
+                      Enable location for accurate Qibla
                     </p>
                   )}
                 </div>

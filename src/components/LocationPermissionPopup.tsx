@@ -80,29 +80,29 @@ export const LocationPermissionPopup = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-md mx-auto rounded-xl">
         <DialogHeader>
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-            <MapPin className="w-8 h-8 text-primary" />
+          <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
+            <MapPin className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
           </div>
-          <DialogTitle className="text-center text-xl">
+          <DialogTitle className="text-center text-lg sm:text-xl">
             Enable Location for Accurate Prayer Times
           </DialogTitle>
-          <DialogDescription className="text-center">
+          <DialogDescription className="text-center text-sm">
             Allow location access to get precise prayer times for your area, accurate Qibla direction, and personalized Islamic calendar dates.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 mt-4">
+        <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
           {error && (
-            <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
+            <div className="p-2.5 sm:p-3 rounded-lg bg-destructive/10 text-destructive text-xs sm:text-sm text-center">
               {error}
             </div>
           )}
 
           <div className="space-y-2">
             <Button
-              className="w-full"
+              className="w-full h-10 sm:h-11 text-sm"
               onClick={handleEnableLocation}
               disabled={isLoading}
             >
@@ -121,7 +121,7 @@ export const LocationPermissionPopup = ({
 
             <Button
               variant="ghost"
-              className="w-full"
+              className="w-full h-10 sm:h-11 text-sm"
               onClick={handleDismiss}
               disabled={isLoading}
             >
@@ -129,7 +129,7 @@ export const LocationPermissionPopup = ({
             </Button>
           </div>
 
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-[10px] sm:text-xs text-muted-foreground text-center px-4">
             Your location is only used locally and never stored on our servers.
           </p>
         </div>
