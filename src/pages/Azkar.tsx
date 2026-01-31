@@ -4,9 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { azkarCategories, type Azkar as AzkarType } from "@/data/hisnulMuslimData";
-import { Sun, Moon, BookOpen, Check } from "lucide-react";
+import { Sun, Moon, BookOpen, Check, Share2, Copy, Twitter, Facebook } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Azkar = () => {
   const [selectedCategory, setSelectedCategory] = useState("morning");
@@ -58,6 +65,49 @@ const Azkar = () => {
     const total = currentCategory.azkar.reduce((sum, a) => sum + a.count, 0);
     const completed = currentCategory.azkar.reduce((sum, a) => sum + Math.min(getCount(a.id), a.count), 0);
     return total > 0 ? Math.round((completed / total) * 100) : 0;
+  };
+
+  const copyToClipboard = async (azkar: AzkarType) => {
+    const text = `${azkar.arabic}\n\n${azkar.transliteration}\n\n${azkar.translation}\n\n— ${azkar.reference}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Copied to clipboard!");
+    } catch (err) {
+      toast.error("Failed to copy");
+    }
+  };
+
+  const shareToTwitter = (azkar: AzkarType) => {
+    const text = `${azkar.arabic}\n\n"${azkar.translation}"\n\n— ${azkar.reference}`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const shareToFacebook = (azkar: AzkarType) => {
+    const text = `${azkar.arabic}\n\n"${azkar.translation}"\n\n— ${azkar.reference}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const shareNative = async (azkar: AzkarType) => {
+    const text = `${azkar.arabic}\n\n${azkar.transliteration}\n\n${azkar.translation}\n\n— ${azkar.reference}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: azkar.title,
+          text: text,
+        });
+      } catch (err) {
+        // User cancelled or share failed
+        if ((err as Error).name !== "AbortError") {
+          toast.error("Failed to share");
+        }
+      }
+    } else {
+      // Fallback to copy
+      copyToClipboard(azkar);
+    }
   };
 
   return (
@@ -152,6 +202,33 @@ const Azkar = () => {
                             </p>
                           </div>
                         </div>
+                        
+                        {/* Share Button */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon-sm">
+                              <Share2 className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => shareNative(azkar)}>
+                              <Share2 className="w-4 h-4 mr-2" />
+                              Share
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => copyToClipboard(azkar)}>
+                              <Copy className="w-4 h-4 mr-2" />
+                              Copy to Clipboard
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => shareToTwitter(azkar)}>
+                              <Twitter className="w-4 h-4 mr-2" />
+                              Share on X (Twitter)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => shareToFacebook(azkar)}>
+                              <Facebook className="w-4 h-4 mr-2" />
+                              Share on Facebook
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
 
                       {/* Arabic Text */}

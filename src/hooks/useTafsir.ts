@@ -15,8 +15,17 @@ export interface TafsirData {
 
 export const TAFSIR_SOURCES = [
   { id: "en.ibn-kathir", name: "Tafsir Ibn Kathir", language: "English" },
-  { id: "ar.muyassar", name: "Tafsir al-Muyassar", language: "Arabic" },
   { id: "en.jalalayn", name: "Tafsir al-Jalalayn", language: "English" },
+  { id: "ar.muyassar", name: "Tafsir al-Muyassar", language: "Arabic" },
+  { id: "ar.qurtubi", name: "Tafsir al-Qurtubi", language: "Arabic" },
+  { id: "ur.jalandhry", name: "Fateh Muhammad Jalandhry", language: "Urdu" },
+  { id: "id.indonesian", name: "Tafsir Indonesia", language: "Indonesian" },
+  { id: "fr.hamidullah", name: "Muhammad Hamidullah", language: "French" },
+  { id: "de.aburida", name: "Abu Rida Muhammad", language: "German" },
+  { id: "es.cortes", name: "Julio Cortés", language: "Spanish" },
+  { id: "tr.ates", name: "Süleyman Ateş", language: "Turkish" },
+  { id: "ru.kuliev", name: "Elmir Kuliev", language: "Russian" },
+  { id: "bn.bengali", name: "Bengali Translation", language: "Bengali" },
 ];
 
 // Fetch Tafsir for a surah

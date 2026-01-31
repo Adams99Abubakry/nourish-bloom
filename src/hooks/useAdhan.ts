@@ -8,7 +8,10 @@ interface AdhanState {
   audioEnabled: boolean;
 }
 
-const ADHAN_AUDIO_URL = "https://cdn.aladhan.com/audio/adhans/adhan-makkah.mp3";
+// Full Makkah Adhan audio - higher quality and more reliable URL
+const ADHAN_AUDIO_URL = "https://www.islamcan.com/audio/adhan/azan1.mp3";
+// Fajr-specific Adhan (different tune traditionally)
+const FAJR_ADHAN_URL = "https://www.islamcan.com/audio/adhan/azan8.mp3";
 
 export const useAdhan = (prayers: PrayerTime[] | undefined) => {
   const [state, setState] = useState<AdhanState>(() => ({
@@ -20,13 +23,33 @@ export const useAdhan = (prayers: PrayerTime[] | undefined) => {
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastNotifiedPrayer = useRef<string>('');
+  const notificationCheckRef = useRef<boolean>(false);
 
+  // Request notification permission with better handling for mobile/APK
   const requestNotificationPermission = useCallback(async () => {
-    if ('Notification' in window) {
+    if (!('Notification' in window)) {
+      console.log('Notifications not supported');
+      return false;
+    }
+    
+    // Check current permission state
+    if (Notification.permission === 'granted') {
+      return true;
+    }
+    
+    if (Notification.permission === 'denied') {
+      console.log('Notifications were denied by user');
+      return false;
+    }
+    
+    // Request permission
+    try {
       const permission = await Notification.requestPermission();
       return permission === 'granted';
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      return false;
     }
-    return false;
   }, []);
 
   const enableNotifications = useCallback(async () => {
@@ -34,6 +57,9 @@ export const useAdhan = (prayers: PrayerTime[] | undefined) => {
     if (granted) {
       setState(prev => ({ ...prev, notificationsEnabled: true }));
       localStorage.setItem('nur-adhan-notifications', 'true');
+      
+      // Store a marker that we've enabled notifications
+      localStorage.setItem('nur-adhan-enabled-timestamp', Date.now().toString());
     }
     return granted;
   }, [requestNotificationPermission]);
@@ -53,15 +79,38 @@ export const useAdhan = (prayers: PrayerTime[] | undefined) => {
 
   const playAdhan = useCallback((prayerName: string) => {
     if (state.audioEnabled) {
-      if (!audioRef.current) {
-        audioRef.current = new Audio(ADHAN_AUDIO_URL);
+      // Clean up existing audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
       }
-      audioRef.current.play().catch(console.error);
-      setState(prev => ({ ...prev, isPlaying: true, currentPrayer: prayerName }));
       
+      // Use Fajr-specific adhan for Fajr prayer
+      const adhanUrl = prayerName === 'Fajr' ? FAJR_ADHAN_URL : ADHAN_AUDIO_URL;
+      
+      audioRef.current = new Audio(adhanUrl);
+      audioRef.current.volume = 1.0;
+      
+      // Set up event handlers before playing
       audioRef.current.onended = () => {
         setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
       };
+      
+      audioRef.current.onerror = (e) => {
+        console.error('Adhan audio error:', e);
+        setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
+      };
+      
+      // Play the adhan
+      audioRef.current.play()
+        .then(() => {
+          setState(prev => ({ ...prev, isPlaying: true, currentPrayer: prayerName }));
+        })
+        .catch((error) => {
+          console.error('Failed to play adhan:', error);
+          // Try with user interaction fallback
+          setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
+        });
     }
   }, [state.audioEnabled]);
 
@@ -69,50 +118,93 @@ export const useAdhan = (prayers: PrayerTime[] | undefined) => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      audioRef.current = null;
     }
     setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
   }, []);
 
   const showNotification = useCallback((prayerName: string, arabicName: string) => {
     if (state.notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
-      const notification = new Notification(`🕌 ${prayerName} Prayer Time`, {
-        body: `It's time for ${prayerName} (${arabicName}) prayer`,
-        icon: '/favicon.ico',
-        tag: `adhan-${prayerName}`,
-        requireInteraction: true,
-      });
-      
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
-      };
+      try {
+        const notification = new Notification(`🕌 ${prayerName} Prayer Time`, {
+          body: `It's time for ${prayerName} (${arabicName}) prayer. May Allah accept your prayers.`,
+          icon: '/favicon.ico',
+          tag: `adhan-${prayerName}-${Date.now()}`,
+          requireInteraction: true,
+          silent: false, // Allow sound
+        });
+        
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
+        
+        // Auto-close after 30 seconds
+        setTimeout(() => {
+          notification.close();
+        }, 30000);
+        
+      } catch (error) {
+        console.error('Error showing notification:', error);
+      }
     }
   }, [state.notificationsEnabled]);
 
-  // Check prayer times every second
+  // Check prayer times every second - improved for mobile/APK
   useEffect(() => {
     if (!prayers || prayers.length === 0) return;
     
     const checkPrayerTime = () => {
       const now = new Date();
-      const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const currentHours = now.getHours().toString().padStart(2, '0');
+      const currentMinutes = now.getMinutes().toString().padStart(2, '0');
+      const currentTimeStr = `${currentHours}:${currentMinutes}`;
+      const currentSeconds = now.getSeconds();
+      
+      // Only check at the start of each minute (first 5 seconds)
+      // This prevents multiple triggers
+      if (currentSeconds > 5) return;
       
       for (const prayer of prayers) {
         if (prayer.name === 'Sunrise') continue; // Skip sunrise
         
-        if (prayer.time === currentTimeStr && lastNotifiedPrayer.current !== `${prayer.name}-${currentTimeStr}`) {
-          lastNotifiedPrayer.current = `${prayer.name}-${currentTimeStr}`;
+        const prayerKey = `${prayer.name}-${currentTimeStr}`;
+        
+        if (prayer.time === currentTimeStr && lastNotifiedPrayer.current !== prayerKey) {
+          lastNotifiedPrayer.current = prayerKey;
           
+          // Show notification first
           showNotification(prayer.name, prayer.arabicName);
+          
+          // Then play adhan
           playAdhan(prayer.name);
+          
           break;
         }
       }
     };
 
+    // Initial check
+    checkPrayerTime();
+    
+    // Check every second
     const interval = setInterval(checkPrayerTime, 1000);
     return () => clearInterval(interval);
   }, [prayers, showNotification, playAdhan]);
+
+  // Re-check notification permission on mount (for APK/PWA)
+  useEffect(() => {
+    if (state.notificationsEnabled && !notificationCheckRef.current) {
+      notificationCheckRef.current = true;
+      
+      // Verify permission is still granted
+      if ('Notification' in window && Notification.permission !== 'granted') {
+        // Permission was revoked, update state
+        setState(prev => ({ ...prev, notificationsEnabled: false }));
+        localStorage.setItem('nur-adhan-notifications', 'false');
+      }
+    }
+  }, [state.notificationsEnabled]);
 
   return {
     isPlaying: state.isPlaying,
