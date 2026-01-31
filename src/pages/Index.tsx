@@ -8,6 +8,7 @@ import { DailyVerse } from "@/components/DailyVerse";
 import { RamadanChecklist } from "@/components/RamadanChecklist";
 import { RamadanCountdown } from "@/components/RamadanCountdown";
 import { SplashScreen } from "@/components/SplashScreen";
+import { LocationPermissionPopup } from "@/components/LocationPermissionPopup";
 import { useHijriDate } from "@/hooks/useHijriDate";
 import { usePrayerTimesWithLocation } from "@/hooks/usePrayerTimes";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +36,11 @@ const Index = () => {
     return <SplashScreen onComplete={handleSplashComplete} />;
   }
 
+  const handleLocationGranted = () => {
+    // Refresh page to get new prayer times
+    window.location.reload();
+  };
+
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-US', { 
     weekday: 'long', 
@@ -45,6 +51,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background islamic-pattern">
+      <LocationPermissionPopup onLocationGranted={handleLocationGranted} />
       <Header />
       
       <main className="container mx-auto px-4 py-6 space-y-6">

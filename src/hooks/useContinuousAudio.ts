@@ -8,6 +8,11 @@ interface ContinuousAudioState {
   duration: number;
 }
 
+// Bismillah audio URL - verse 1 of Surah 1 (Al-Fatihah)
+const getBismillahUrl = (reciterIdentifier: string) => {
+  return `https://everyayah.com/data/${reciterIdentifier}/001001.mp3`;
+};
+
 export const useContinuousAudio = (
   surahNumber: number,
   totalVerses: number,
@@ -27,6 +32,7 @@ export const useContinuousAudio = (
   const preloadedVerseRef = useRef<number | null>(null);
   const isAutoPlaying = useRef(false);
   const stateRef = useRef(state);
+  const playingBismillah = useRef(false);
 
   useEffect(() => {
     stateRef.current = state;
@@ -87,13 +93,13 @@ export const useContinuousAudio = (
     [ensureAudio, setAudioSrcForVerse, preloadVerse]
   );
 
+  // Immediately start playing - no waiting for canplaythrough
   const safePlay = useCallback(async (audio: HTMLAudioElement) => {
-    // Don’t wait for canplaythrough (can be slow/never fire). Try to play immediately.
     try {
       await audio.play();
       return;
     } catch {
-      // Retry once the browser has buffered enough.
+      // Retry once the browser has buffered enough
       const retry = () => {
         audio.play().catch(console.error);
       };
@@ -102,23 +108,40 @@ export const useContinuousAudio = (
     }
   }, []);
 
+  // Check if this surah should have Bismillah read
+  // Surah 1 (Al-Fatihah) - Bismillah is part of the surah
+  // Surah 9 (At-Tawbah) - No Bismillah
+  // All other surahs - Bismillah should be read before
+  const shouldPlayBismillah = useCallback(() => {
+    return surahNumber !== 1 && surahNumber !== 9;
+  }, [surahNumber]);
+
   const play = useCallback(() => {
     const audio = ensureAudio();
-
-    // Ensure we have a source.
-    if (!audio.src) {
-      loadVerse(stateRef.current.currentVerse);
-    }
-
     isAutoPlaying.current = true;
     setState((prev) => ({ ...prev, isPlaying: true }));
-    void safePlay(audio);
-  }, [ensureAudio, loadVerse, safePlay]);
+
+    // If starting from verse 1 and should play bismillah
+    if (stateRef.current.currentVerse === 1 && shouldPlayBismillah() && !playingBismillah.current) {
+      playingBismillah.current = true;
+      audio.src = getBismillahUrl(reciterIdentifier);
+      audio.load();
+      void safePlay(audio);
+    } else {
+      // Ensure we have a source for the current verse
+      if (!audio.src || audio.src === "" || playingBismillah.current) {
+        playingBismillah.current = false;
+        loadVerse(stateRef.current.currentVerse);
+      }
+      void safePlay(audio);
+    }
+  }, [ensureAudio, loadVerse, safePlay, shouldPlayBismillah, reciterIdentifier]);
 
   const pause = useCallback(() => {
     const audio = audioRef.current;
     if (audio) audio.pause();
     isAutoPlaying.current = false;
+    playingBismillah.current = false;
     setState((prev) => ({ ...prev, isPlaying: false }));
   }, []);
 
@@ -132,6 +155,7 @@ export const useContinuousAudio = (
 
   const goToVerse = useCallback((verseNumber: number) => {
     const wasPlaying = stateRef.current.isPlaying;
+    playingBismillah.current = false;
     loadVerse(verseNumber);
     if (wasPlaying) {
       isAutoPlaying.current = true;
@@ -169,6 +193,16 @@ export const useContinuousAudio = (
     const handleEnded = () => {
       if (!isAutoPlaying.current) return;
 
+      // If we just finished playing Bismillah, now play verse 1
+      if (playingBismillah.current) {
+        playingBismillah.current = false;
+        setAudioSrcForVerse(audio, 1);
+        audio.currentTime = 0;
+        preloadVerse(2);
+        void safePlay(audio);
+        return;
+      }
+
       const cv = stateRef.current.currentVerse;
       if (cv >= totalVerses) {
         isAutoPlaying.current = false;
@@ -178,8 +212,7 @@ export const useContinuousAudio = (
 
       const nextVerseNum = cv + 1;
 
-      // Move to next verse immediately.
-      // (We keep the SAME audio element so ended listeners keep working.)
+      // Move to next verse immediately - use preloaded audio if available
       const preload = preloadRef.current;
       if (preloadedVerseRef.current === nextVerseNum && preload?.src) {
         audio.src = preload.src;
@@ -195,10 +228,10 @@ export const useContinuousAudio = (
         duration: 0,
       }));
 
-      // Start immediately; if buffering is needed, safePlay will retry on canplay.
+      // Start immediately
       void safePlay(audio);
 
-      // Preload the following verse.
+      // Preload the following verse
       preloadVerse(nextVerseNum + 1);
     };
 
@@ -220,6 +253,7 @@ export const useContinuousAudio = (
     audio.currentTime = 0;
     isAutoPlaying.current = false;
     preloadedVerseRef.current = null;
+    playingBismillah.current = false;
 
     setState({
       isPlaying: false,
@@ -228,10 +262,16 @@ export const useContinuousAudio = (
       duration: 0,
     });
 
-    // Load first verse + preload second.
-    setAudioSrcForVerse(audio, 1);
-    audio.load();
-    preloadVerse(2);
+    // Preload first verse (or bismillah)
+    if (surahNumber !== 1 && surahNumber !== 9) {
+      // Preload bismillah
+      audio.src = getBismillahUrl(reciterIdentifier);
+      audio.load();
+    } else {
+      setAudioSrcForVerse(audio, 1);
+      audio.load();
+    }
+    preloadVerse(surahNumber !== 1 && surahNumber !== 9 ? 1 : 2);
   }, [ensureAudio, preloadVerse, reciterIdentifier, setAudioSrcForVerse, surahNumber, totalVerses]);
 
   return {

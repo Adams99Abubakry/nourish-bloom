@@ -65,6 +65,7 @@ const Prayers = () => {
   const [deviceOrientation, setDeviceOrientation] = useState<number | null>(null);
   const [qiblaDirection, setQiblaDirection] = useState<number>(0);
   const [compassAvailable, setCompassAvailable] = useState(false);
+  const [compassError, setCompassError] = useState<string | null>(null);
 
   // Calculate Qibla when location is available
   useEffect(() => {
@@ -74,42 +75,84 @@ const Prayers = () => {
     }
   }, [location]);
 
-  // Try to get device orientation for compass
+  // Try to get device orientation for compass - improved for mobile
   useEffect(() => {
+    let orientationHandler: ((event: DeviceOrientationEvent) => void) | null = null;
+
     const handleOrientation = (event: DeviceOrientationEvent) => {
-      if (event.alpha !== null) {
-        setDeviceOrientation(event.alpha);
+      // Use webkitCompassHeading for iOS if available (true north)
+      const heading = (event as any).webkitCompassHeading ?? event.alpha;
+      
+      if (heading !== null && heading !== undefined) {
+        // For iOS webkitCompassHeading, the value is already correct
+        // For Android alpha, we need to adjust
+        const isIOS = (event as any).webkitCompassHeading !== undefined;
+        
+        if (isIOS) {
+          setDeviceOrientation(heading);
+        } else {
+          // Android: alpha is degrees from north, but goes counterclockwise
+          // We need to invert it for correct compass behavior
+          setDeviceOrientation(360 - heading);
+        }
         setCompassAvailable(true);
+        setCompassError(null);
       }
     };
 
-    // Request permission on iOS
+    orientationHandler = handleOrientation;
+
+    const startCompass = () => {
+      if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', handleOrientation, true);
+      }
+    };
+
+    // Check if we need to request permission (iOS 13+)
     if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-      // Will be triggered by user interaction
+      // Permission will be requested on button click
     } else if (window.DeviceOrientationEvent) {
-      window.addEventListener('deviceorientation', handleOrientation);
+      // No permission needed, start directly
+      startCompass();
     }
 
     return () => {
-      window.removeEventListener('deviceorientation', handleOrientation);
+      if (orientationHandler) {
+        window.removeEventListener('deviceorientation', orientationHandler);
+      }
     };
   }, []);
 
   const requestCompassPermission = async () => {
+    setCompassError(null);
+    
     try {
       if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
         const permission = await (DeviceOrientationEvent as any).requestPermission();
         if (permission === 'granted') {
-          window.addEventListener('deviceorientation', (event: DeviceOrientationEvent) => {
-            if (event.alpha !== null) {
-              setDeviceOrientation(event.alpha);
+          const handleOrientation = (event: DeviceOrientationEvent) => {
+            const heading = (event as any).webkitCompassHeading ?? event.alpha;
+            if (heading !== null && heading !== undefined) {
+              const isIOS = (event as any).webkitCompassHeading !== undefined;
+              setDeviceOrientation(isIOS ? heading : 360 - heading);
               setCompassAvailable(true);
             }
-          });
+          };
+          window.addEventListener('deviceorientation', handleOrientation, true);
+          toast.success("Compass enabled! Point your device north.");
+        } else {
+          setCompassError("Compass permission denied");
+          toast.error("Compass permission denied");
         }
+      } else {
+        // Try to enable without permission request
+        setCompassError("Compass may not be available on this device");
+        toast.info("Move your device in a figure-8 pattern to calibrate the compass");
       }
     } catch (error) {
-      console.error('Compass permission denied:', error);
+      console.error('Compass permission error:', error);
+      setCompassError("Could not access compass");
+      toast.error("Could not access compass sensor");
     }
   };
 
@@ -361,19 +404,34 @@ const Prayers = () => {
                 <div className="mt-8 text-center">
                   <p className="text-3xl font-bold text-primary-foreground">{qiblaDirection}°</p>
                   <p className="text-primary-foreground/70 text-sm">{getDirectionName(qiblaDirection)}</p>
+                  
                   {!compassAvailable && (
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="mt-4 text-primary-foreground/60"
+                      className="mt-4 text-primary-foreground/80 hover:text-primary-foreground"
                       onClick={requestCompassPermission}
                     >
+                      <Compass className="w-4 h-4 mr-2" />
                       Enable Compass
                     </Button>
                   )}
+                  
                   {compassAvailable && (
                     <p className="text-xs text-primary-foreground/50 mt-2">
-                      Compass active - Point phone north
+                      ✓ Compass active - Point device north for accurate direction
+                    </p>
+                  )}
+                  
+                  {compassError && (
+                    <p className="text-xs text-primary-foreground/50 mt-2">
+                      {compassError}
+                    </p>
+                  )}
+                  
+                  {!location && (
+                    <p className="text-xs text-primary-foreground/50 mt-2">
+                      Enable location for accurate Qibla direction
                     </p>
                   )}
                 </div>
