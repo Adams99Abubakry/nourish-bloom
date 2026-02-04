@@ -17,6 +17,8 @@ import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import Zakat from "./pages/Zakat";
 import Azkar from "./pages/Azkar";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import DeleteData from "./pages/DeleteData";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +44,8 @@ const App = () => (
               <Route path="/ramadan" element={<Ramadan />} />
               <Route path="/zakat" element={<Zakat />} />
               <Route path="/azkar" element={<Azkar />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/delete-data" element={<DeleteData />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
