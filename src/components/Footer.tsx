@@ -1,4 +1,5 @@
-import { Moon } from "lucide-react";
+import { Moon, Shield, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
@@ -12,6 +13,25 @@ export function Footer() {
           <p className="text-xs sm:text-sm text-muted-foreground px-4">
             In the name of Allah, the Most Gracious, the Most Merciful
           </p>
+
+          {/* Legal links */}
+          <div className="flex items-center justify-center gap-4 pt-2">
+            <Link
+              to="/privacy-policy"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              Privacy Policy
+            </Link>
+            <span className="text-border">•</span>
+            <Link
+              to="/delete-data"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete Data
+            </Link>
+          </div>
           
           {/* Developer credit */}
           <div className="flex items-center justify-center gap-2 pt-3 sm:pt-4">
