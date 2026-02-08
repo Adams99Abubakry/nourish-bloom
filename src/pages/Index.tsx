@@ -7,6 +7,7 @@ import { QuickActions } from "@/components/QuickActions";
 import { DailyVerse } from "@/components/DailyVerse";
 import { RamadanChecklist } from "@/components/RamadanChecklist";
 import { RamadanCountdown } from "@/components/RamadanCountdown";
+import { DonationCard } from "@/components/DonationCard";
 import { SplashScreen } from "@/components/SplashScreen";
 import { LocationPermissionPopup } from "@/components/LocationPermissionPopup";
 import { useHijriDate } from "@/hooks/useHijriDate";
@@ -152,6 +153,11 @@ const Index = () => {
         {/* Daily Verse */}
         <section className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
           <DailyVerse />
+        </section>
+
+        {/* Donation Card */}
+        <section className="animate-slide-up" style={{ animationDelay: '0.35s' }}>
+          <DonationCard />
         </section>
 
         {/* Main Content Grid */}
