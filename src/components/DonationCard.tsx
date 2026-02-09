@@ -87,7 +87,7 @@ export function DonationCard() {
   };
 
   return (
-    <Card variant="gold" className="overflow-hidden">
+    <Card variant="elevated" className="overflow-hidden">
       <CardContent className="p-4 sm:p-6 space-y-4">
         {/* Header */}
         <div className="flex items-center gap-3">
