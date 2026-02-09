@@ -7,6 +7,8 @@ import { QuickActions } from "@/components/QuickActions";
 import { DailyVerse } from "@/components/DailyVerse";
 import { RamadanChecklist } from "@/components/RamadanChecklist";
 import { RamadanCountdown } from "@/components/RamadanCountdown";
+import { DonationCard } from "@/components/DonationCard";
+import { DonationPopup } from "@/components/DonationPopup";
 import { SplashScreen } from "@/components/SplashScreen";
 import { LocationPermissionPopup } from "@/components/LocationPermissionPopup";
 import { useHijriDate } from "@/hooks/useHijriDate";
@@ -52,6 +54,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background islamic-pattern">
       <LocationPermissionPopup onLocationGranted={handleLocationGranted} />
+      <DonationPopup />
       <Header />
       
       <main className="container mx-auto px-4 py-6 space-y-6">
@@ -152,6 +155,11 @@ const Index = () => {
         {/* Daily Verse */}
         <section className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
           <DailyVerse />
+        </section>
+
+        {/* Donation Card */}
+        <section className="animate-slide-up" style={{ animationDelay: '0.35s' }}>
+          <DonationCard />
         </section>
 
         {/* Main Content Grid */}
