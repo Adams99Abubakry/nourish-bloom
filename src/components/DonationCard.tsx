@@ -50,9 +50,8 @@ export function DonationCard() {
       return;
     }
 
-    const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-    console.log("Paystack key exists:", !!publicKey, "starts with:", publicKey?.substring(0, 8));
-    if (!publicKey || !publicKey.startsWith("pk_")) {
+    const publicKey = "pk_live_bfc95e62de169fefb474c2fb4c67eea3a05c4f51";
+    if (!publicKey) {
       toast({ title: "Configuration error", description: "A valid Paystack public key (pk_live_... or pk_test_...) is required", variant: "destructive" });
       return;
     }
