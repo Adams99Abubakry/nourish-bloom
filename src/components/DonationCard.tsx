@@ -51,8 +51,9 @@ export function DonationCard() {
     }
 
     const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-    if (!publicKey) {
-      toast({ title: "Configuration error", description: "Payment is not configured yet", variant: "destructive" });
+    console.log("Paystack key exists:", !!publicKey, "starts with:", publicKey?.substring(0, 8));
+    if (!publicKey || !publicKey.startsWith("pk_")) {
+      toast({ title: "Configuration error", description: "A valid Paystack public key (pk_live_... or pk_test_...) is required", variant: "destructive" });
       return;
     }
 
