@@ -19,6 +19,7 @@ import Zakat from "./pages/Zakat";
 import Azkar from "./pages/Azkar";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteData from "./pages/DeleteData";
+import MasjidFinder from "./pages/MasjidFinder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/azkar" element={<Azkar />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/delete-data" element={<DeleteData />} />
+              <Route path="/masjid-finder" element={<MasjidFinder />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

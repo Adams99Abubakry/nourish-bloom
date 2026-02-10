@@ -13,18 +13,20 @@ export interface TafsirData {
   language: string;
 }
 
+// These are actual working edition identifiers from the Al-Quran Cloud API
+// Tafsir/commentary editions are separate from simple translations
 export const TAFSIR_SOURCES = [
-  { id: "en.ibn-kathir", name: "Tafsir Ibn Kathir", language: "English" },
-  { id: "en.jalalayn", name: "Tafsir al-Jalalayn", language: "English" },
-  { id: "ar.muyassar", name: "Tafsir al-Muyassar", language: "Arabic" },
-  { id: "ar.qurtubi", name: "Tafsir al-Qurtubi", language: "Arabic" },
-  { id: "ur.jalandhry", name: "Fateh Muhammad Jalandhry", language: "Urdu" },
-  { id: "id.indonesian", name: "Tafsir Indonesia", language: "Indonesian" },
-  { id: "fr.hamidullah", name: "Muhammad Hamidullah", language: "French" },
-  { id: "de.aburida", name: "Abu Rida Muhammad", language: "German" },
-  { id: "es.cortes", name: "Julio Cortés", language: "Spanish" },
-  { id: "tr.ates", name: "Süleyman Ateş", language: "Turkish" },
-  { id: "ru.kuliev", name: "Elmir Kuliev", language: "Russian" },
+  { id: "en.sahih", name: "Sahih International (English)", language: "English" },
+  { id: "en.pickthall", name: "Pickthall (English)", language: "English" },
+  { id: "en.yusufali", name: "Yusuf Ali (English)", language: "English" },
+  { id: "ar.muyassar", name: "Tafsir al-Muyassar (Arabic)", language: "Arabic" },
+  { id: "ur.jalandhry", name: "Fateh Muhammad Jalandhry (Urdu)", language: "Urdu" },
+  { id: "id.indonesian", name: "Indonesian Ministry (Indonesian)", language: "Indonesian" },
+  { id: "fr.hamidullah", name: "Muhammad Hamidullah (French)", language: "French" },
+  { id: "de.aburida", name: "Abu Rida Muhammad (German)", language: "German" },
+  { id: "es.cortes", name: "Julio Cortés (Spanish)", language: "Spanish" },
+  { id: "tr.ates", name: "Süleyman Ateş (Turkish)", language: "Turkish" },
+  { id: "ru.kuliev", name: "Elmir Kuliev (Russian)", language: "Russian" },
   { id: "bn.bengali", name: "Bengali Translation", language: "Bengali" },
 ];
 
@@ -56,7 +58,7 @@ const fetchTafsir = async (surahNumber: number, tafsirId: string): Promise<Tafsi
   };
 };
 
-export const useTafsir = (surahNumber: number, tafsirId: string = "en.ibn-kathir") => {
+export const useTafsir = (surahNumber: number, tafsirId: string = "en.sahih") => {
   return useQuery({
     queryKey: ["tafsir", surahNumber, tafsirId],
     queryFn: () => fetchTafsir(surahNumber, tafsirId),
