@@ -7,10 +7,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { MapPin, Loader2, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MapPin, Loader2, LocateFixed } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+const POPULAR_COUNTRIES = [
+  "Nigeria", "United Kingdom", "United States", "Saudi Arabia", "UAE",
+  "India", "Pakistan", "Bangladesh", "Indonesia", "Malaysia",
+  "Egypt", "Turkey", "Canada", "South Africa", "Ghana",
+  "Kenya", "Australia", "Germany", "France", "Morocco",
+];
 
 interface LocationPermissionPopupProps {
-  onLocationGranted?: (coords: GeolocationCoordinates) => void;
+  onLocationGranted?: (coords?: GeolocationCoordinates) => void;
   onDismiss?: () => void;
 }
 
@@ -21,14 +34,18 @@ export const LocationPermissionPopup = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showManual, setShowManual] = useState(false);
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const { user, refreshProfile } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user has already dismissed or granted permission
     const hasSeenPopup = localStorage.getItem("nur-location-popup-seen");
     const hasLocation = localStorage.getItem("nur-location-granted");
     
     if (!hasSeenPopup && !hasLocation) {
-      // Show popup after a short delay for better UX
       const timer = setTimeout(() => {
         setIsOpen(true);
       }, 1500);
@@ -59,16 +76,70 @@ export const LocationPermissionPopup = ({
       setIsOpen(false);
     } catch (err: any) {
       if (err.code === 1) {
-        setError("Location permission denied. Please enable it in your browser settings.");
+        setError("Location permission denied. You can enter your location manually below.");
+        setShowManual(true);
       } else if (err.code === 2) {
-        setError("Unable to determine your location. Please try again.");
+        setError("Unable to determine your location. Try entering it manually.");
+        setShowManual(true);
       } else if (err.code === 3) {
-        setError("Location request timed out. Please try again.");
+        setError("Location request timed out. Try entering it manually.");
+        setShowManual(true);
       } else {
         setError(err.message || "Failed to get location");
+        setShowManual(true);
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleManualSave = async () => {
+    if (!city || !country) {
+      setError("Please enter both city and country.");
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+    try {
+      const query = `${city}, ${country}`;
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
+      );
+      const data = await response.json();
+      if (data.length === 0) {
+        setError("Location not found. Please check your city/country name.");
+        setIsSaving(false);
+        return;
+      }
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+
+      if (user) {
+        await supabase
+          .from("profiles")
+          .update({
+            preferred_city: city,
+            preferred_country: country,
+            preferred_latitude: lat,
+            preferred_longitude: lon,
+          })
+          .eq("user_id", user.id);
+        await refreshProfile();
+      }
+
+      localStorage.setItem("nur-location-granted", "true");
+      localStorage.setItem("nur-location-popup-seen", "true");
+      toast({
+        title: "Location Set ✅",
+        description: `Prayer times will be based on ${city}, ${country}.`,
+      });
+      onLocationGranted?.();
+      setIsOpen(false);
+    } catch {
+      setError("Failed to save location. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -86,10 +157,10 @@ export const LocationPermissionPopup = ({
             <MapPin className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
           </div>
           <DialogTitle className="text-center text-lg sm:text-xl">
-            Enable Location for Accurate Prayer Times
+            Set Your Location for Prayer Times
           </DialogTitle>
           <DialogDescription className="text-center text-sm">
-            Allow location access to get precise prayer times for your area, accurate Qibla direction, and personalized Islamic calendar dates.
+            We need your location to show accurate prayer times, Qibla direction, and nearby mosques.
           </DialogDescription>
         </DialogHeader>
 
@@ -100,25 +171,76 @@ export const LocationPermissionPopup = ({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Button
-              className="w-full h-10 sm:h-11 text-sm"
-              onClick={handleEnableLocation}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Detecting Location...
-                </>
-              ) : (
-                <>
-                  <MapPin className="w-4 h-4 mr-2" />
-                  Enable Location
-                </>
-              )}
-            </Button>
+          {!showManual && (
+            <div className="space-y-2">
+              <Button
+                className="w-full h-10 sm:h-11 text-sm"
+                onClick={handleEnableLocation}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Detecting Location...</>
+                ) : (
+                  <><LocateFixed className="w-4 h-4 mr-2" />Auto-detect Location</>
+                )}
+              </Button>
 
+              <Button
+                variant="outline"
+                className="w-full h-10 sm:h-11 text-sm"
+                onClick={() => setShowManual(true)}
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                Enter Location Manually
+              </Button>
+            </div>
+          )}
+
+          {showManual && (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-sm">Country</Label>
+                <Select value={country} onValueChange={setCountry}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {POPULAR_COUNTRIES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm">City</Label>
+                <Input
+                  placeholder="e.g. Lagos, London, Riyadh"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
+              </div>
+              <Button
+                className="w-full h-10 sm:h-11 text-sm"
+                onClick={handleManualSave}
+                disabled={isSaving || !city || !country}
+              >
+                {isSaving ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
+                ) : (
+                  "Save Location"
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full text-sm"
+                onClick={() => { setShowManual(false); setError(null); }}
+              >
+                Back to auto-detect
+              </Button>
+            </div>
+          )}
+
+          {!showManual && (
             <Button
               variant="ghost"
               className="w-full h-10 sm:h-11 text-sm"
@@ -127,10 +249,10 @@ export const LocationPermissionPopup = ({
             >
               Maybe Later
             </Button>
-          </div>
+          )}
 
           <p className="text-[10px] sm:text-xs text-muted-foreground text-center px-4">
-            Your location is only used locally and never stored on our servers.
+            Your location is only used for prayer times and never shared.
           </p>
         </div>
       </DialogContent>

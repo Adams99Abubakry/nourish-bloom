@@ -21,7 +21,7 @@ const SurahReader = () => {
   
   const [selectedTranslation, setSelectedTranslation] = useState("en.sahih");
   const [selectedReciter, setSelectedReciter] = useState(RECITERS[0].audioIdentifier);
-  const [selectedTafsir, setSelectedTafsir] = useState("en.ibn-kathir");
+  const [selectedTafsir, setSelectedTafsir] = useState("en.sahih");
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<"reading" | "tafsir">("reading");
   

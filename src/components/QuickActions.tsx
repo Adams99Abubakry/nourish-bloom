@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, HandHelping, Compass, CheckSquare, Heart, Calculator, Sun } from "lucide-react";
+import { BookOpen, HandHelping, Compass, CheckSquare, Heart, Calculator, Sun, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const actions = [
@@ -40,6 +40,12 @@ const actions = [
     description: "Calculator",
   },
   {
+    icon: MapPin,
+    label: "Masjid",
+    path: "/masjid-finder",
+    description: "Find nearby",
+  },
+  {
     icon: CheckSquare,
     label: "Ramadan",
     path: "/ramadan",
@@ -49,7 +55,7 @@ const actions = [
 
 export function QuickActions() {
   return (
-    <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-3">
+    <div className="grid grid-cols-4 xs:grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-2 sm:gap-3">
       {actions.map((action) => (
         <Link key={action.path} to={action.path}>
           <Card variant="interactive" className="h-full">

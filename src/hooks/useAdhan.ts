@@ -13,6 +13,10 @@ const ADHAN_AUDIO_URL = "https://www.islamcan.com/audio/adhan/azan1.mp3";
 // Fajr-specific Adhan (different tune traditionally)
 const FAJR_ADHAN_URL = "https://www.islamcan.com/audio/adhan/azan8.mp3";
 
+const PRAYER_ARABIC_NAMES_MAP: Record<string, string> = {
+  Fajr: "الفجر", Dhuhr: "الظهر", Asr: "العصر", Maghrib: "المغرب", Isha: "العشاء",
+};
+
 export const useAdhan = (prayers: PrayerTime[] | undefined) => {
   const [state, setState] = useState<AdhanState>(() => ({
     isPlaying: false,
@@ -88,29 +92,46 @@ export const useAdhan = (prayers: PrayerTime[] | undefined) => {
       // Use Fajr-specific adhan for Fajr prayer
       const adhanUrl = prayerName === 'Fajr' ? FAJR_ADHAN_URL : ADHAN_AUDIO_URL;
       
-      audioRef.current = new Audio(adhanUrl);
-      audioRef.current.volume = 1.0;
+      const audio = new Audio();
+      audioRef.current = audio;
+      audio.volume = 1.0;
+      
+      // For Capacitor/mobile apps, we need to set attributes before loading
+      audio.setAttribute('playsinline', 'true');
+      audio.preload = 'auto';
       
       // Set up event handlers before playing
-      audioRef.current.onended = () => {
+      audio.onended = () => {
         setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
       };
       
-      audioRef.current.onerror = (e) => {
+      audio.onerror = (e) => {
         console.error('Adhan audio error:', e);
         setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
       };
+
+      audio.src = adhanUrl;
       
-      // Play the adhan
-      audioRef.current.play()
-        .then(() => {
-          setState(prev => ({ ...prev, isPlaying: true, currentPrayer: prayerName }));
-        })
-        .catch((error) => {
-          console.error('Failed to play adhan:', error);
-          // Try with user interaction fallback
-          setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
-        });
+      // Use a more robust play approach for mobile/Capacitor
+      const attemptPlay = () => {
+        audio.play()
+          .then(() => {
+            setState(prev => ({ ...prev, isPlaying: true, currentPrayer: prayerName }));
+          })
+          .catch((error) => {
+            console.error('Failed to play adhan:', error);
+            // On mobile, autoplay may be blocked — show notification instead
+            showNotification(prayerName, PRAYER_ARABIC_NAMES_MAP[prayerName] || '');
+            setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
+          });
+      };
+
+      // Wait for audio to be ready
+      if (audio.readyState >= 2) {
+        attemptPlay();
+      } else {
+        audio.oncanplay = attemptPlay;
+      }
     }
   }, [state.audioEnabled]);
 
