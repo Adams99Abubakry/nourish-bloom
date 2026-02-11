@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Settings as SettingsIcon, Moon, Sun, Bell, BellOff, Volume2, VolumeX, BookOpen, Languages, Save, ArrowLeft } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 import { AzkarReminderCard } from "@/components/AzkarReminderCard";
+import { LocationSetupCard } from "@/components/LocationSetupCard";
 
 const RECITERS = [
   { id: "ar.alafasy", name: "Mishary Rashid Alafasy" },
@@ -246,6 +247,9 @@ export default function Settings() {
 
           {/* Azkar Voice Reminder */}
           <AzkarReminderCard />
+
+          {/* Location Settings */}
+          <LocationSetupCard />
 
           {/* Quran Preferences */}
           <Card variant="elevated">

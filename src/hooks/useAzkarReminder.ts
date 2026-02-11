@@ -37,19 +37,34 @@ function getRandomAzkar() {
 function speakAzkar(text: string) {
   if (!("speechSynthesis" in window)) return;
 
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "ar-SA";
-  utterance.rate = 0.85;
-  utterance.pitch = 1;
+  // Ensure voices are loaded first
+  const trySpeak = () => {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "ar-SA";
+    utterance.rate = 0.85;
+    utterance.pitch = 1;
 
+    const voices = window.speechSynthesis.getVoices();
+    const arabicVoice = voices.find(
+      (v) => v.lang.startsWith("ar") && v.localService
+    ) || voices.find((v) => v.lang.startsWith("ar"));
+    if (arabicVoice) utterance.voice = arabicVoice;
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Voices may not be loaded yet on some devices
   const voices = window.speechSynthesis.getVoices();
-  const arabicVoice = voices.find(
-    (v) => v.lang.startsWith("ar") && v.localService
-  ) || voices.find((v) => v.lang.startsWith("ar"));
-  if (arabicVoice) utterance.voice = arabicVoice;
-
-  window.speechSynthesis.speak(utterance);
+  if (voices.length > 0) {
+    trySpeak();
+  } else {
+    window.speechSynthesis.onvoiceschanged = () => {
+      trySpeak();
+    };
+    // Fallback: try anyway after a short delay
+    setTimeout(trySpeak, 500);
+  }
 }
 
 function sendNotification(arabic: string, translation: string) {
