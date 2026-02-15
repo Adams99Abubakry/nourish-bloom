@@ -1,30 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Loader2, Save, LocateFixed } from "lucide-react";
+import { MapPin, Loader2, Save, LocateFixed, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-const COUNTRIES = [
-  "Afghanistan", "Albania", "Algeria", "Angola", "Argentina", "Australia", "Austria",
-  "Bahrain", "Bangladesh", "Belgium", "Bosnia and Herzegovina", "Brazil", "Brunei",
-  "Cameroon", "Canada", "Chad", "China", "Colombia", "Comoros", "Côte d'Ivoire",
-  "Denmark", "Djibouti", "Egypt", "Ethiopia", "Finland", "France", "Gambia",
-  "Germany", "Ghana", "Guinea", "Guyana", "India", "Indonesia", "Iran", "Iraq",
-  "Ireland", "Italy", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kuwait",
-  "Kyrgyzstan", "Lebanon", "Libya", "Malaysia", "Maldives", "Mali", "Mauritania",
-  "Mexico", "Morocco", "Mozambique", "Netherlands", "Niger", "Nigeria", "Norway",
-  "Oman", "Pakistan", "Palestine", "Philippines", "Poland", "Portugal", "Qatar",
-  "Russia", "Saudi Arabia", "Senegal", "Sierra Leone", "Singapore", "Somalia",
-  "South Africa", "Spain", "Sri Lanka", "Sudan", "Sweden", "Switzerland", "Syria",
-  "Tajikistan", "Tanzania", "Thailand", "Trinidad and Tobago", "Tunisia", "Turkey",
-  "Turkmenistan", "UAE", "Uganda", "Ukraine", "United Kingdom", "United States",
-  "Uzbekistan", "Yemen"
-];
+import { ALL_COUNTRIES } from "@/data/countries";
 
 interface LocationSetupCardProps {
   onLocationSaved?: () => void;
@@ -35,26 +18,15 @@ export function LocationSetupCard({ onLocationSaved }: LocationSetupCardProps) {
   const { user, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [country, setCountry] = useState("");
+  const [countrySearch, setCountrySearch] = useState("");
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isGeolocating, setIsGeolocating] = useState(false);
 
-  const geocodeLocation = async (city: string, state: string, country: string) => {
-    const query = [city, state, country].filter(Boolean).join(", ");
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
-      );
-      const data = await response.json();
-      if (data.length > 0) {
-        return { latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) };
-      }
-    } catch (err) {
-      console.error("Geocoding error:", err);
-    }
-    return null;
-  };
+  const filteredCountries = ALL_COUNTRIES.filter(c =>
+    c.toLowerCase().includes(countrySearch.toLowerCase())
+  );
 
   const handleAutoDetect = async () => {
     if (!navigator.geolocation) {
@@ -64,18 +36,22 @@ export function LocationSetupCard({ onLocationSaved }: LocationSetupCardProps) {
     setIsGeolocating(true);
     try {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 15000, maximumAge: 300000 });
       });
       const { latitude, longitude } = position.coords;
       const response = await fetch(
         `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
       );
       const data = await response.json();
-      setCity(data.city || data.locality || "");
-      setState(data.principalSubdivision || "");
-      setCountry(data.countryName || "");
+      const detectedCity = data.city || data.locality || "";
+      const detectedState = data.principalSubdivision || "";
+      const detectedCountry = data.countryName || "";
+      setCity(detectedCity);
+      setState(detectedState);
+      setCountry(detectedCountry);
+      setCountrySearch(detectedCountry);
     } catch {
-      toast({ title: "Location failed", description: "Could not detect your location automatically.", variant: "destructive" });
+      toast({ title: "Location failed", description: "Could not detect your location. Please enter manually.", variant: "destructive" });
     } finally {
       setIsGeolocating(false);
     }
@@ -93,33 +69,31 @@ export function LocationSetupCard({ onLocationSaved }: LocationSetupCardProps) {
 
     setIsSaving(true);
     try {
-      const coords = await geocodeLocation(city, state, country);
-      if (!coords) {
-        toast({ title: "Location not found", description: "Could not find coordinates for the given location. Please check and try again.", variant: "destructive" });
+      const query = [city, state, country].filter(Boolean).join(", ");
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
+      );
+      const data = await response.json();
+      if (data.length === 0) {
+        toast({ title: "Location not found", description: "Could not find coordinates. Please check and try again.", variant: "destructive" });
         setIsSaving(false);
         return;
       }
 
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          preferred_city: city,
-          preferred_country: country,
-          preferred_latitude: coords.latitude,
-          preferred_longitude: coords.longitude,
-        })
-        .eq("user_id", user.id);
+      const coords = { latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) };
+      const { error } = await supabase.from("profiles").update({
+        preferred_city: city,
+        preferred_country: country,
+        preferred_latitude: coords.latitude,
+        preferred_longitude: coords.longitude,
+      }).eq("user_id", user.id);
 
       if (error) throw error;
 
       await refreshProfile();
       localStorage.setItem("nur-location-granted", "true");
       localStorage.setItem("nur-location-popup-seen", "true");
-
-      toast({
-        title: "Location Saved ✅",
-        description: `Prayer times will now be based on ${city}, ${country}.`,
-      });
+      toast({ title: "Location Saved ✅", description: `Prayer times will now be based on ${city}, ${country}.` });
       onLocationSaved?.();
     } catch (error) {
       console.error("Error saving location:", error);
@@ -141,12 +115,7 @@ export function LocationSetupCard({ onLocationSaved }: LocationSetupCardProps) {
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={handleAutoDetect}
-          disabled={isGeolocating}
-        >
+        <Button variant="outline" className="w-full" onClick={handleAutoDetect} disabled={isGeolocating}>
           {isGeolocating ? (
             <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Detecting...</>
           ) : (
@@ -163,16 +132,32 @@ export function LocationSetupCard({ onLocationSaved }: LocationSetupCardProps) {
         <div className="space-y-3">
           <div className="space-y-1.5">
             <Label htmlFor="country" className="text-sm">Country</Label>
-            <Select value={country} onValueChange={setCountry}>
-              <SelectTrigger id="country">
-                <SelectValue placeholder="Select country" />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search country..."
+                value={countrySearch}
+                onChange={(e) => { setCountrySearch(e.target.value); setCountry(""); }}
+                className="pl-8"
+              />
+            </div>
+            {countrySearch && !country && (
+              <div className="max-h-32 overflow-y-auto border rounded-md bg-background">
+                {filteredCountries.slice(0, 10).map((c) => (
+                  <button
+                    key={c}
+                    className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+                    onClick={() => { setCountry(c); setCountrySearch(c); }}
+                  >
+                    {c}
+                  </button>
                 ))}
-              </SelectContent>
-            </Select>
+                {filteredCountries.length === 0 && (
+                  <p className="px-3 py-2 text-xs text-muted-foreground">No country found</p>
+                )}
+              </div>
+            )}
+            {country && <p className="text-xs text-primary">✓ {country}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="state" className="text-sm">State / Province</Label>
@@ -184,11 +169,7 @@ export function LocationSetupCard({ onLocationSaved }: LocationSetupCardProps) {
           </div>
         </div>
 
-        <Button
-          className="w-full"
-          onClick={handleSave}
-          disabled={isSaving || (!city && !country)}
-        >
+        <Button className="w-full" onClick={handleSave} disabled={isSaving || (!city && !country)}>
           {isSaving ? (
             <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
           ) : (
