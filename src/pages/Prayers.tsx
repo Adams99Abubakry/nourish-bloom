@@ -2,11 +2,11 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Compass, MapPin, Bell, BellOff, Clock, Navigation, Loader2, Volume2, VolumeX } from "lucide-react";
+import { Compass, MapPin, Bell, BellOff, Clock, Navigation, Loader2, Volume2, VolumeX, Play, Check } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { usePrayerTimesWithLocation, Location } from "@/hooks/usePrayerTimes";
-import { useAdhan } from "@/hooks/useAdhan";
+import { useAdhan, ADHAN_OPTIONS } from "@/hooks/useAdhan";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -48,9 +48,12 @@ const Prayers = () => {
     currentPrayer, 
     notificationsEnabled, 
     audioEnabled,
+    selectedAdhan,
     enableNotifications, 
     disableNotifications, 
     toggleAudio,
+    setSelectedAdhan,
+    previewAdhan,
     stopAdhan 
   } = useAdhan(prayerData?.prayers);
   
@@ -274,6 +277,40 @@ const Prayers = () => {
                   {audioEnabled ? <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                 </Button>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Adhan Voice Selector */}
+        <Card variant="subtle" className="mb-4 sm:mb-6 animate-slide-up">
+          <CardContent className="p-3 sm:p-4">
+            <p className="font-medium text-foreground text-sm mb-3">Choose Adhan Voice</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {ADHAN_OPTIONS.map((option) => (
+                <div
+                  key={option.id}
+                  className={cn(
+                    "flex items-center justify-between gap-1 p-2 rounded-lg border text-xs sm:text-sm cursor-pointer transition-all",
+                    selectedAdhan === option.id
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-secondary/30 hover:bg-secondary/50"
+                  )}
+                  onClick={() => setSelectedAdhan(option.id)}
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {selectedAdhan === option.id && <Check className="w-3 h-3 shrink-0" />}
+                    <span className="truncate">{option.name}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="w-6 h-6 shrink-0"
+                    onClick={(e) => { e.stopPropagation(); isPlaying ? stopAdhan() : previewAdhan(option.id); }}
+                  >
+                    {isPlaying && currentPrayer === 'Preview' ? <VolumeX className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                  </Button>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
