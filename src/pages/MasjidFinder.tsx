@@ -48,9 +48,23 @@ const fetchNearbyMosques = async (lat: number, lon: number): Promise<Masjid[]> =
       const elLat = el.lat ?? el.center?.lat;
       const elLon = el.lon ?? el.center?.lon;
       if (!elLat || !elLon) return null;
+      const tags = el.tags || {};
+      // Build a rich address from all available OSM tags
+      const addressParts = [
+        tags["addr:housenumber"],
+        tags["addr:street"],
+        tags["addr:suburb"] || tags["addr:neighbourhood"],
+        tags["addr:city"] || tags["addr:town"] || tags["addr:village"],
+        tags["addr:state"] || tags["addr:province"],
+        tags["addr:postcode"],
+        tags["addr:country"],
+      ].filter(Boolean);
+      const address = addressParts.length > 0
+        ? addressParts.join(", ")
+        : tags["description"] || tags["operator"] || "Tap directions for location";
       return {
-        name: el.tags?.name || el.tags?.["name:en"] || "Mosque",
-        address: [el.tags?.["addr:street"], el.tags?.["addr:city"]].filter(Boolean).join(", ") || "Address not available",
+        name: tags.name || tags["name:en"] || tags["name:ar"] || "Mosque",
+        address,
         lat: elLat,
         lon: elLon,
         distance: haversineDistance(lat, lon, elLat, elLon),

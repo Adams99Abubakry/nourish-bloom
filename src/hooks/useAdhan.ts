@@ -4,6 +4,7 @@ import { PrayerTime } from './usePrayerTimes';
 interface AdhanState {
   isPlaying: boolean;
   currentPrayer: string | null;
+  currentPreviewId: string | null;
   notificationsEnabled: boolean;
   audioEnabled: boolean;
   selectedAdhan: string;
@@ -29,17 +30,11 @@ const isCapacitor = (): boolean => {
   return !!(window as any).Capacitor || !!(window as any).capacitor;
 };
 
-// Check if notifications are available (may not be in Capacitor WebView)
-const isNotificationSupported = (): boolean => {
-  // In Capacitor, the browser Notification API may not exist
-  if (isCapacitor()) return false;
-  return 'Notification' in window;
-};
-
 export const useAdhan = (prayers: PrayerTime[] | undefined) => {
   const [state, setState] = useState<AdhanState>(() => ({
     isPlaying: false,
     currentPrayer: null,
+    currentPreviewId: null,
     notificationsEnabled: localStorage.getItem('nur-adhan-notifications') === 'true',
     audioEnabled: localStorage.getItem('nur-adhan-audio') === 'true',
     selectedAdhan: localStorage.getItem('nur-adhan-voice') || 'makkah',
@@ -48,42 +43,19 @@ export const useAdhan = (prayers: PrayerTime[] | undefined) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastNotifiedPrayer = useRef<string>('');
 
-  const getSelectedAdhanUrls = useCallback(() => {
-    const option = ADHAN_OPTIONS.find(o => o.id === state.selectedAdhan) || ADHAN_OPTIONS[0];
-    return option;
-  }, [state.selectedAdhan]);
-
-  // For Capacitor apps, we skip browser notification permission
-  // and just enable audio-based alerts directly
-  const requestNotificationPermission = useCallback(async () => {
-    if (isCapacitor()) {
-      // In Capacitor, we just enable audio — no browser notification needed
-      return true;
-    }
-    
-    if (!isNotificationSupported()) {
-      // Still allow enabling — we'll just play audio
-      return true;
-    }
-    
-    if (Notification.permission === 'granted') return true;
-    if (Notification.permission === 'denied') return true; // Still allow — audio will work
-    
-    try {
-      await Notification.requestPermission();
-      return true;
-    } catch {
-      return true; // Allow anyway — audio is the primary mechanism
-    }
-  }, []);
-
+  // Enable notifications — skip browser Notification API entirely in Capacitor
   const enableNotifications = useCallback(async () => {
-    await requestNotificationPermission();
+    // In Capacitor, don't check browser notification API at all
+    if (!isCapacitor()) {
+      if ('Notification' in window && Notification.permission === 'default') {
+        try { await Notification.requestPermission(); } catch {}
+      }
+    }
     setState(prev => ({ ...prev, notificationsEnabled: true, audioEnabled: true }));
     localStorage.setItem('nur-adhan-notifications', 'true');
     localStorage.setItem('nur-adhan-audio', 'true');
     return true;
-  }, [requestNotificationPermission]);
+  }, []);
 
   const disableNotifications = useCallback(() => {
     setState(prev => ({ ...prev, notificationsEnabled: false }));
@@ -103,46 +75,50 @@ export const useAdhan = (prayers: PrayerTime[] | undefined) => {
     localStorage.setItem('nur-adhan-voice', id);
   }, []);
 
-  const playAdhan = useCallback((prayerName: string) => {
-    // Clean up existing audio
+  const stopAdhan = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.currentTime = 0;
       audioRef.current = null;
     }
-    
-    const adhanOption = ADHAN_OPTIONS.find(o => o.id === state.selectedAdhan) || ADHAN_OPTIONS[0];
-    const adhanUrl = prayerName === 'Fajr' ? adhanOption.fajrUrl : adhanOption.url;
-    
+    setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null, currentPreviewId: null }));
+  }, []);
+
+  // Core audio play function — used for both adhan and preview
+  const playAudioUrl = useCallback((url: string, label: string, previewId?: string) => {
+    // ALWAYS stop any current audio first
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+
     const audio = new Audio();
     audioRef.current = audio;
     audio.volume = 1.0;
-    
-    // Critical for Capacitor/mobile
     audio.setAttribute('playsinline', 'true');
     audio.setAttribute('webkit-playsinline', 'true');
     audio.preload = 'auto';
-    
+    audio.src = url;
+
     audio.onended = () => {
-      setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
-    };
-    
-    audio.onerror = (e) => {
-      console.error('Adhan audio error:', e);
-      setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
+      setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null, currentPreviewId: null }));
+      audioRef.current = null;
     };
 
-    audio.src = adhanUrl;
-    
+    audio.onerror = () => {
+      setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null, currentPreviewId: null }));
+      audioRef.current = null;
+    };
+
     const attemptPlay = () => {
       audio.play()
         .then(() => {
-          setState(prev => ({ ...prev, isPlaying: true, currentPrayer: prayerName }));
+          setState(prev => ({ ...prev, isPlaying: true, currentPrayer: label, currentPreviewId: previewId || null }));
         })
         .catch((error) => {
           console.error('Failed to play adhan:', error);
-          // Try showing notification as fallback
-          showNotification(prayerName, PRAYER_ARABIC_NAMES_MAP[prayerName] || '');
-          setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
+          setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null, currentPreviewId: null }));
         });
     };
 
@@ -151,60 +127,38 @@ export const useAdhan = (prayers: PrayerTime[] | undefined) => {
     } else {
       audio.oncanplay = attemptPlay;
     }
-  }, [state.selectedAdhan]);
+  }, []);
 
-  // Preview/test a specific adhan voice
+  const playAdhan = useCallback((prayerName: string) => {
+    const adhanOption = ADHAN_OPTIONS.find(o => o.id === state.selectedAdhan) || ADHAN_OPTIONS[0];
+    const url = prayerName === 'Fajr' ? adhanOption.fajrUrl : adhanOption.url;
+    playAudioUrl(url, prayerName);
+  }, [state.selectedAdhan, playAudioUrl]);
+
+  // Preview a specific adhan voice — only plays that one voice
   const previewAdhan = useCallback((adhanId: string) => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+    // If already previewing this same one, stop it
+    if (state.isPlaying && state.currentPreviewId === adhanId) {
+      stopAdhan();
+      return;
     }
-    
     const option = ADHAN_OPTIONS.find(o => o.id === adhanId) || ADHAN_OPTIONS[0];
-    const audio = new Audio();
-    audioRef.current = audio;
-    audio.volume = 1.0;
-    audio.setAttribute('playsinline', 'true');
-    audio.setAttribute('webkit-playsinline', 'true');
-    audio.preload = 'auto';
-    audio.src = option.url;
-    
-    audio.onended = () => {
-      setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
-    };
+    playAudioUrl(option.url, 'Preview', adhanId);
+  }, [state.isPlaying, state.currentPreviewId, playAudioUrl, stopAdhan]);
 
-    const attemptPlay = () => {
-      audio.play()
-        .then(() => setState(prev => ({ ...prev, isPlaying: true, currentPrayer: 'Preview' })))
-        .catch(err => console.error('Preview failed:', err));
-    };
-
-    if (audio.readyState >= 2) attemptPlay();
-    else audio.oncanplay = attemptPlay;
-  }, []);
-
-  const stopAdhan = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-    setState(prev => ({ ...prev, isPlaying: false, currentPrayer: null }));
-  }, []);
-
+  // Show notification (web only)
   const showNotification = useCallback((prayerName: string, arabicName: string) => {
-    if (isNotificationSupported() && Notification.permission === 'granted') {
+    if (isCapacitor()) return;
+    if ('Notification' in window && Notification.permission === 'granted') {
       try {
         new Notification(`🕌 ${prayerName} Prayer Time`, {
-          body: `It's time for ${prayerName} (${arabicName}) prayer. May Allah accept your prayers.`,
+          body: `It's time for ${prayerName} (${arabicName}) prayer.`,
           icon: '/favicon.ico',
           tag: `adhan-${prayerName}-${Date.now()}`,
           requireInteraction: true,
           silent: false,
         });
-      } catch (error) {
-        console.error('Error showing notification:', error);
-      }
+      } catch {}
     }
   }, []);
 
@@ -246,6 +200,7 @@ export const useAdhan = (prayers: PrayerTime[] | undefined) => {
   return {
     isPlaying: state.isPlaying,
     currentPrayer: state.currentPrayer,
+    currentPreviewId: state.currentPreviewId,
     notificationsEnabled: state.notificationsEnabled,
     audioEnabled: state.audioEnabled,
     selectedAdhan: state.selectedAdhan,

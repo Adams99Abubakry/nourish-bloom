@@ -46,6 +46,7 @@ const Prayers = () => {
   const { 
     isPlaying, 
     currentPrayer, 
+    currentPreviewId,
     notificationsEnabled, 
     audioEnabled,
     selectedAdhan,
@@ -305,9 +306,9 @@ const Prayers = () => {
                     variant="ghost"
                     size="icon-sm"
                     className="w-6 h-6 shrink-0"
-                    onClick={(e) => { e.stopPropagation(); isPlaying ? stopAdhan() : previewAdhan(option.id); }}
+                    onClick={(e) => { e.stopPropagation(); previewAdhan(option.id); }}
                   >
-                    {isPlaying && currentPrayer === 'Preview' ? <VolumeX className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                    {isPlaying && currentPreviewId === option.id ? <VolumeX className="w-3 h-3" /> : <Play className="w-3 h-3" />}
                   </Button>
                 </div>
               ))}

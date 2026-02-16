@@ -34,19 +34,29 @@ function getRandomAzkar() {
   return { arabic: AZKAR_REMINDERS[index], translation: AZKAR_TRANSLATIONS[index] };
 }
 
-// Detect Capacitor
-const isCapacitor = (): boolean => {
-  return !!(window as any).Capacitor || !!(window as any).capacitor;
-};
-
+// Use Audio API with a short beep/tone as fallback trigger to wake up audio context
+// Then use speechSynthesis. This approach works better on mobile/Capacitor.
 function speakAzkar(text: string) {
-  if (!("speechSynthesis" in window)) {
-    // Fallback: use Audio API with TTS if speechSynthesis unavailable
-    console.log("Speech synthesis not available, trying audio fallback");
-    return;
-  }
+  // First, try to "unlock" audio on mobile by playing a silent/short audio
+  try {
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = 0.01; // nearly silent
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.1);
+    // Resume context (needed for mobile)
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  } catch {}
 
-  const trySpeak = () => {
+  if (!("speechSynthesis" in window)) return;
+
+  // Small delay to ensure audio context is active
+  setTimeout(() => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ar-SA";
@@ -60,37 +70,8 @@ function speakAzkar(text: string) {
     ) || voices.find((v) => v.lang.startsWith("ar"));
     if (arabicVoice) utterance.voice = arabicVoice;
 
-    // For mobile/Capacitor: ensure utterance plays by using a short delay
-    // This helps with WebView restrictions
-    utterance.onstart = () => console.log("Azkar speech started");
-    utterance.onerror = (e) => console.error("Azkar speech error:", e);
-
     window.speechSynthesis.speak(utterance);
-  };
-
-  const voices = window.speechSynthesis.getVoices();
-  if (voices.length > 0) {
-    trySpeak();
-  } else {
-    window.speechSynthesis.onvoiceschanged = () => {
-      trySpeak();
-    };
-    setTimeout(trySpeak, 500);
-  }
-}
-
-function sendNotification(arabic: string, translation: string) {
-  // Skip notification in Capacitor — use voice only
-  if (isCapacitor()) return;
-  
-  if ("Notification" in window && Notification.permission === "granted") {
-    new Notification("🕌 Azkar Reminder", {
-      body: `${arabic}\n\n${translation}`,
-      icon: "/favicon.ico",
-      tag: "azkar-reminder",
-      requireInteraction: true,
-    });
-  }
+  }, 200);
 }
 
 export function useAzkarReminder() {
@@ -108,15 +89,20 @@ export function useAzkarReminder() {
   const triggerReminder = useCallback(() => {
     const azkar = getRandomAzkar();
     speakAzkar(azkar.arabic);
-    sendNotification(azkar.arabic, azkar.translation);
+  }, []);
+
+  // Pre-load voices on mount
+  useEffect(() => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
   }, []);
 
   const enable = useCallback(async () => {
-    // In Capacitor, skip notification permission — just enable voice
-    if (!isCapacitor() && "Notification" in window && Notification.permission === "default") {
-      await Notification.requestPermission();
-    }
-
+    // Pre-load voices
     if ("speechSynthesis" in window) {
       window.speechSynthesis.getVoices();
     }
