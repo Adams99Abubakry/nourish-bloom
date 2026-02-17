@@ -18,11 +18,26 @@ const QuizSection = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(() => shuffleArray(ISLAMIC_QUIZ_QUESTIONS));
-
-  function shuffleArray(arr: QuizQuestion[]) {
-    return [...arr].sort(() => Math.random() - 0.5);
+  // Seed-based shuffle so questions change daily but stay consistent within a day
+  function seededRandom(seed: number) {
+    let s = seed;
+    return () => {
+      s = (s * 16807 + 0) % 2147483647;
+      return s / 2147483647;
+    };
   }
+
+  function shuffleArray(arr: QuizQuestion[], seed?: number) {
+    const rng = seed != null ? seededRandom(seed) : Math.random;
+    return [...arr].sort(() => rng() - 0.5);
+  }
+
+  function todaySeed() {
+    const d = new Date();
+    return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  }
+
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(() => shuffleArray(ISLAMIC_QUIZ_QUESTIONS, todaySeed()));
 
   const filteredQuestions = selectedCategory === "All"
     ? quizQuestions
@@ -46,14 +61,13 @@ const QuizSection = () => {
     if (currentIndex + 1 < filteredQuestions.length) {
       setCurrentIndex(prev => prev + 1);
     } else {
-      // Reset quiz
-      setQuizQuestions(shuffleArray(ISLAMIC_QUIZ_QUESTIONS));
+      setQuizQuestions(shuffleArray(ISLAMIC_QUIZ_QUESTIONS, todaySeed()));
       setCurrentIndex(0);
     }
   };
 
   const resetQuiz = () => {
-    setQuizQuestions(shuffleArray(ISLAMIC_QUIZ_QUESTIONS));
+    setQuizQuestions(shuffleArray(ISLAMIC_QUIZ_QUESTIONS, todaySeed()));
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setShowExplanation(false);
