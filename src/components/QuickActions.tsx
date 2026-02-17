@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, HandHelping, Compass, CheckSquare, Heart, Calculator, Sun, MapPin } from "lucide-react";
+import { BookOpen, HandHelping, Compass, CheckSquare, Heart, Calculator, Sun, MapPin, Brain } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const actions = [
@@ -50,6 +50,12 @@ const actions = [
     label: "Ramadan",
     path: "/ramadan",
     description: "Daily goals",
+  },
+  {
+    icon: Brain,
+    label: "Knowledge",
+    path: "/islamic-knowledge",
+    description: "Quiz & Q&A",
   },
 ];
 
