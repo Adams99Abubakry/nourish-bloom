@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useHijriDate } from "@/hooks/useHijriDate";
-import { Check, X, Moon, Loader2 } from "lucide-react";
+import { Check, X, Moon, Loader2, Trophy, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 
 const TOTAL_DAYS = 30;
 
 interface FastingDay {
   day: number;
-  fasted: boolean | null; // null = not marked, true = fasted, false = skipped
+  fasted: boolean | null;
   date: string;
 }
 
@@ -61,7 +61,6 @@ export const FastingTracker = () => {
         console.error("Error loading fasting data:", err);
       }
     } else {
-      // Use localStorage for non-logged-in users
       const saved = localStorage.getItem("fasting-tracker");
       if (saved) {
         try {
@@ -125,6 +124,23 @@ export const FastingTracker = () => {
 
   const fastedCount = fastingDays.filter((d) => d.fasted === true).length;
   const skippedCount = fastingDays.filter((d) => d.fasted === false).length;
+  const markedCount = fastedCount + skippedCount;
+  const progressPercent = Math.round((fastedCount / TOTAL_DAYS) * 100);
+
+  // Calculate current streak
+  let streak = 0;
+  for (let i = fastingDays.length - 1; i >= 0; i--) {
+    if (fastingDays[i].fasted === true) streak++;
+    else if (fastingDays[i].fasted !== null) break;
+    else if (currentRamadanDay && fastingDays[i].day < currentRamadanDay) break;
+  }
+  // Recalculate from current day backwards
+  streak = 0;
+  const startDay = currentRamadanDay ?? markedCount;
+  for (let i = startDay - 1; i >= 0; i--) {
+    if (fastingDays[i]?.fasted === true) streak++;
+    else break;
+  }
 
   if (loading) {
     return (
@@ -137,104 +153,175 @@ export const FastingTracker = () => {
   }
 
   return (
-    <Card variant="elevated" className="animate-slide-up">
-      <CardHeader className="pb-3">
+    <Card variant="elevated" className="animate-slide-up overflow-hidden">
+      {/* Header with gradient accent */}
+      <CardHeader className="pb-2 relative">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary/60 to-primary/20" />
         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-          <Moon className="w-5 h-5 text-primary" />
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Moon className="w-4 h-4 text-primary" />
+          </div>
           Fasting Tracker
         </CardTitle>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Tap ✓ if you fasted, ✕ if you skipped
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Track your daily fasts throughout Ramadan
         </p>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Stats */}
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span className="text-muted-foreground">Fasted: <span className="font-semibold text-foreground">{fastedCount}</span></span>
+
+      <CardContent className="space-y-5 pt-2">
+        {/* Progress bar */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">Progress</span>
+            <span className="font-semibold text-foreground">{fastedCount}/{TOTAL_DAYS} days</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-400" />
-            <span className="text-muted-foreground">Skipped: <span className="font-semibold text-foreground">{skippedCount}</span></span>
+          <Progress value={progressPercent} className="h-2.5" />
+        </div>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-xl bg-primary/5 border border-primary/10 p-3 text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Check className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <p className="text-lg font-bold text-foreground leading-none">{fastedCount}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Fasted</p>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-muted" />
-            <span className="text-muted-foreground">Remaining: <span className="font-semibold text-foreground">{TOTAL_DAYS - fastedCount - skippedCount}</span></span>
+          <div className="rounded-xl bg-destructive/5 border border-destructive/10 p-3 text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <X className="w-3.5 h-3.5 text-destructive" />
+            </div>
+            <p className="text-lg font-bold text-foreground leading-none">{skippedCount}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Skipped</p>
+          </div>
+          <div className="rounded-xl bg-accent/50 border border-border/50 p-3 text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <TrendingUp className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <p className="text-lg font-bold text-foreground leading-none">{streak}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Streak</p>
           </div>
         </div>
 
-        {/* Day Grid */}
-        <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
-          {fastingDays.map((day) => {
-            const isToday = currentRamadanDay === day.day;
-            const isFuture = currentRamadanDay ? day.day > currentRamadanDay : false;
+        {/* Achievement badge */}
+        {fastedCount >= 10 && (
+          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/15">
+            <Trophy className="w-4 h-4 text-primary shrink-0" />
+            <p className="text-xs text-foreground">
+              {fastedCount >= 30
+                ? "🎉 MashaAllah! You completed all 30 days!"
+                : fastedCount >= 20
+                ? "Almost there! Keep going, you're doing amazing!"
+                : "Great progress! You've fasted more than 10 days!"}
+            </p>
+          </div>
+        )}
 
-            return (
-              <div
-                key={day.day}
-                className={cn(
-                  "relative rounded-lg p-2 text-center transition-all border",
-                  isToday && "ring-2 ring-primary ring-offset-1",
-                  day.fasted === true && "bg-green-500/15 border-green-500/30",
-                  day.fasted === false && "bg-red-400/15 border-red-400/30",
-                  day.fasted === null && "bg-secondary/30 border-border/50",
-                  isFuture && "opacity-40"
-                )}
-              >
-                <p className={cn(
-                  "text-xs font-medium mb-1",
-                  isToday ? "text-primary" : "text-muted-foreground"
-                )}>
-                  Day {day.day}
-                </p>
+        {/* Calendar-style day grid */}
+        <div>
+          {/* Week headers */}
+          <div className="grid grid-cols-6 gap-1.5 mb-1.5">
+            {["1–6", "7–12", "13–18", "19–24", "25–30", ""].map((label, i) =>
+              i < 5 ? (
+                <div key={i} className="text-center">
+                  <span className="text-[9px] text-muted-foreground/60 font-medium">Week {i + 1}</span>
+                </div>
+              ) : null
+            )}
+          </div>
 
-                {day.fasted === true && (
-                  <Check className="w-4 h-4 text-green-500 mx-auto" />
-                )}
-                {day.fasted === false && (
-                  <X className="w-4 h-4 text-red-400 mx-auto" />
-                )}
+          <div className="grid grid-cols-6 gap-1.5">
+            {fastingDays.map((day) => {
+              const isToday = currentRamadanDay === day.day;
+              const isFuture = currentRamadanDay ? day.day > currentRamadanDay : false;
+              const isFasted = day.fasted === true;
+              const isSkipped = day.fasted === false;
 
-                {!isFuture && (
-                  <div className="flex items-center justify-center gap-1 mt-1">
+              return (
+                <div
+                  key={day.day}
+                  className={cn(
+                    "relative rounded-lg aspect-square flex flex-col items-center justify-center transition-all border cursor-default",
+                    isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+                    isFasted && "bg-primary/10 border-primary/25",
+                    isSkipped && "bg-destructive/8 border-destructive/20",
+                    !isFasted && !isSkipped && "bg-secondary/40 border-border/40",
+                    isFuture && "opacity-30 pointer-events-none"
+                  )}
+                >
+                  {/* Day number */}
+                  <span className={cn(
+                    "text-[11px] font-semibold leading-none",
+                    isToday ? "text-primary" : "text-foreground/70"
+                  )}>
+                    {day.day}
+                  </span>
+
+                  {/* Status icon */}
+                  {isFasted && <Check className="w-3 h-3 text-primary mt-0.5" />}
+                  {isSkipped && <X className="w-3 h-3 text-destructive mt-0.5" />}
+
+                  {/* Action buttons - only show for non-future days */}
+                  {!isFuture && !isFasted && !isSkipped && (
+                    <div className="flex gap-0.5 mt-0.5">
+                      <button
+                        onClick={() => toggleFasting(day.day, true)}
+                        disabled={saving === day.day}
+                        className="w-4 h-4 rounded-full bg-primary/15 hover:bg-primary/30 flex items-center justify-center transition-colors"
+                        aria-label={`Mark day ${day.day} as fasted`}
+                      >
+                        <Check className="w-2.5 h-2.5 text-primary" />
+                      </button>
+                      <button
+                        onClick={() => toggleFasting(day.day, false)}
+                        disabled={saving === day.day}
+                        className="w-4 h-4 rounded-full bg-destructive/15 hover:bg-destructive/30 flex items-center justify-center transition-colors"
+                        aria-label={`Mark day ${day.day} as skipped`}
+                      >
+                        <X className="w-2.5 h-2.5 text-destructive" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Already marked - tap to undo */}
+                  {!isFuture && (isFasted || isSkipped) && (
                     <button
-                      onClick={() => toggleFasting(day.day, true)}
+                      onClick={() => toggleFasting(day.day, isFasted ? true : false)}
                       disabled={saving === day.day}
-                      className={cn(
-                        "w-6 h-6 rounded-full flex items-center justify-center text-[10px] transition-all",
-                        day.fasted === true
-                          ? "bg-green-500 text-white"
-                          : "bg-muted hover:bg-green-500/20 text-muted-foreground"
-                      )}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={() => toggleFasting(day.day, false)}
-                      disabled={saving === day.day}
-                      className={cn(
-                        "w-6 h-6 rounded-full flex items-center justify-center text-[10px] transition-all",
-                        day.fasted === false
-                          ? "bg-red-400 text-white"
-                          : "bg-muted hover:bg-red-400/20 text-muted-foreground"
-                      )}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
+                      className="absolute inset-0 rounded-lg"
+                      aria-label={`Undo day ${day.day}`}
+                    />
+                  )}
 
-                {saving === day.day && (
-                  <Loader2 className="w-3 h-3 animate-spin text-primary absolute top-1 right-1" />
-                )}
-              </div>
-            );
-          })}
+                  {saving === day.day && (
+                    <div className="absolute inset-0 bg-background/60 rounded-lg flex items-center justify-center">
+                      <Loader2 className="w-3 h-3 animate-spin text-primary" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-4 pt-1">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm bg-primary/20 border border-primary/30" />
+            <span className="text-[10px] text-muted-foreground">Fasted</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm bg-destructive/15 border border-destructive/25" />
+            <span className="text-[10px] text-muted-foreground">Skipped</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm bg-secondary/40 border border-border/40" />
+            <span className="text-[10px] text-muted-foreground">Unmarked</span>
+          </div>
         </div>
 
         {!user && (
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-[10px] text-muted-foreground text-center pt-1">
             Sign in to save your fasting data across devices
           </p>
         )}
