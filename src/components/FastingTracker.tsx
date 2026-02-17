@@ -195,13 +195,16 @@ export const FastingTracker = () => {
                   key={day.day}
                   disabled={isFuture || saving === day.day}
                   onClick={() => {
-                    if (isFasted) toggleFasting(day.day, true);
-                    else if (isSkipped) toggleFasting(day.day, false);
-                    else toggleFasting(day.day, true);
-                  }}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    if (!isFuture) toggleFasting(day.day, false);
+                    if (isFasted) {
+                      // Fasted → Skipped
+                      toggleFasting(day.day, false);
+                    } else if (isSkipped) {
+                      // Skipped → Unmarked (clear it)
+                      toggleFasting(day.day, false);
+                    } else {
+                      // Unmarked → Fasted
+                      toggleFasting(day.day, true);
+                    }
                   }}
                   className={cn(
                     "relative aspect-square rounded-md flex items-center justify-center transition-all text-[11px] sm:text-xs font-medium",
@@ -239,7 +242,7 @@ export const FastingTracker = () => {
               <span className="text-[10px] text-muted-foreground">Skipped</span>
             </div>
           </div>
-          <span className="text-[9px] text-muted-foreground/60">Long press to skip</span>
+          <span className="text-[9px] text-muted-foreground/60">Tap to cycle: ✓ → ✗ → clear</span>
         </div>
 
         {!user && (
