@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RamadanChecklist } from "@/components/RamadanChecklist";
+import { FastingTracker } from "@/components/FastingTracker";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Moon, Star, Heart, BookOpen, PenLine, Calendar, Loader2, Gift, Utensils, Clock, Target, Sparkles } from "lucide-react";
@@ -286,6 +287,9 @@ const Ramadan = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Fasting Tracker */}
+        <FastingTracker />
 
         {/* Main Grid */}
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
