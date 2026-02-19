@@ -23,7 +23,16 @@ export function RamadanCountdown() {
   const getDaysUntilRamadan = () => {
     if (!hijriDate || isRamadan) return 0;
     const currentMonth = HIJRI_MONTH_NUMBERS[hijriDate.month] ?? 0;
-    if (currentMonth === 0 || currentMonth >= 9) return 0;
+    if (currentMonth === 0) return 0;
+    // If we're past Ramadan (month >= 10, i.e. after Shawwal starts), calculate to next year's Ramadan
+    if (currentMonth >= 10) {
+      const remainingInCurrentMonth = 30 - hijriDate.day;
+      const monthsUntilEndOfYear = 12 - currentMonth;
+      const monthsInNextYear = 8; // Muharram through Sha'ban
+      return remainingInCurrentMonth + ((monthsUntilEndOfYear + monthsInNextYear) * 30);
+    }
+    // If we're in Shawwal (month 10) it's handled above
+    // Months 1-8: calculate forward to month 9
     const remainingInCurrentMonth = 30 - hijriDate.day;
     const monthsBetween = 9 - currentMonth - 1;
     return remainingInCurrentMonth + (monthsBetween * 30);

@@ -5,12 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { BookOpen, Brain, MessageCircle, Check, X, ArrowRight, Loader2, Send, RefreshCw } from "lucide-react";
+import { BookOpen, Brain, MessageCircle, Check, X, ArrowRight, Loader2, Send, RefreshCw, Trophy } from "lucide-react";
 import { ISLAMIC_QUIZ_QUESTIONS, QUIZ_CATEGORIES, type QuizQuestion } from "@/data/islamicQuizData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
 
 // ─── Quiz Section ────────────────────────────────────────
+
+function shuffleArray(arr: QuizQuestion[]) {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+const TOTAL_QUESTIONS = 40;
 
 const QuizSection = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -18,29 +29,11 @@ const QuizSection = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
-  // Seed-based shuffle so questions change daily but stay consistent within a day
-  function seededRandom(seed: number) {
-    let s = seed;
-    return () => {
-      s = (s * 16807 + 0) % 2147483647;
-      return s / 2147483647;
-    };
-  }
-
-  function shuffleArray(arr: QuizQuestion[], seed?: number) {
-    const rng = seed != null ? seededRandom(seed) : Math.random;
-    return [...arr].sort(() => rng() - 0.5);
-  }
-
-  function todaySeed() {
-    const d = new Date();
-    return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
-  }
-
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(() => shuffleArray(ISLAMIC_QUIZ_QUESTIONS, todaySeed()));
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(() => shuffleArray(ISLAMIC_QUIZ_QUESTIONS));
 
   const filteredQuestions = selectedCategory === "All"
-    ? quizQuestions
+    ? quizQuestions.slice(0, TOTAL_QUESTIONS)
     : quizQuestions.filter(q => q.category === selectedCategory);
 
   const currentQ = filteredQuestions[currentIndex];
@@ -61,18 +54,50 @@ const QuizSection = () => {
     if (currentIndex + 1 < filteredQuestions.length) {
       setCurrentIndex(prev => prev + 1);
     } else {
-      setQuizQuestions(shuffleArray(ISLAMIC_QUIZ_QUESTIONS, todaySeed()));
-      setCurrentIndex(0);
+      setQuizCompleted(true);
     }
   };
 
   const resetQuiz = () => {
-    setQuizQuestions(shuffleArray(ISLAMIC_QUIZ_QUESTIONS, todaySeed()));
+    setQuizQuestions(shuffleArray(ISLAMIC_QUIZ_QUESTIONS));
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setShowExplanation(false);
     setScore({ correct: 0, total: 0 });
+    setQuizCompleted(false);
   };
+
+  const getScoreMessage = () => {
+    const pct = Math.round((score.correct / score.total) * 100);
+    if (pct === 100) return { emoji: "🏆", title: "MashaAllah! Perfect Score!", message: "You have excellent Islamic knowledge. Keep it up!" };
+    if (pct >= 80) return { emoji: "🌟", title: "Excellent!", message: "Your knowledge of Islam is very strong. May Allah increase it further." };
+    if (pct >= 60) return { emoji: "📖", title: "Good Effort!", message: "You have a good foundation. Keep learning and reviewing." };
+    if (pct >= 40) return { emoji: "💪", title: "Keep Learning!", message: "There's always room to grow. Review the topics you missed." };
+    return { emoji: "🤲", title: "Don't Give Up!", message: "Every journey starts with a step. Keep seeking knowledge, it's an obligation!" };
+  };
+
+  // Completion screen
+  if (quizCompleted) {
+    const msg = getScoreMessage();
+    const pct = Math.round((score.correct / score.total) * 100);
+    return (
+      <Card variant="elevated" className="animate-fade-in">
+        <CardContent className="p-6 text-center space-y-4">
+          <div className="text-5xl">{msg.emoji}</div>
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10">
+            <Trophy className="w-7 h-7 text-primary" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground">{msg.title}</h2>
+          <p className="text-3xl font-bold text-primary">{score.correct}/{score.total}</p>
+          <p className="text-sm text-muted-foreground">({pct}% correct)</p>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto">{msg.message}</p>
+          <Button onClick={resetQuiz} className="mt-4">
+            <RefreshCw className="w-4 h-4 mr-2" /> Try Again with New Questions
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!currentQ) {
     return (
@@ -159,7 +184,7 @@ const QuizSection = () => {
 
           {selectedAnswer !== null && (
             <Button onClick={nextQuestion} className="w-full" size="sm">
-              {currentIndex + 1 < filteredQuestions.length ? "Next Question" : "Restart Quiz"}
+              {currentIndex + 1 < filteredQuestions.length ? "Next Question" : "See Results"}
               <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           )}

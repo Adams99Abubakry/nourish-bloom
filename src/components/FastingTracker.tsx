@@ -89,25 +89,13 @@ export const FastingTracker = () => {
     if (user) {
       const goalDate = `2026-ramadan-day-${day}`;
       try {
-        const { data: existing } = await supabase
+        const { error: upsertError } = await supabase
           .from("ramadan_goals")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("goal_date", goalDate)
-          .maybeSingle();
-
-        if (existing) {
-          await supabase
-            .from("ramadan_goals")
-            .update({ fasted: newValue })
-            .eq("id", existing.id);
-        } else {
-          await supabase.from("ramadan_goals").insert({
-            user_id: user.id,
-            goal_date: goalDate,
-            fasted: newValue,
-          });
-        }
+          .upsert(
+            { user_id: user.id, goal_date: goalDate, fasted: newValue },
+            { onConflict: "user_id,goal_date" }
+          );
+        if (upsertError) throw upsertError;
       } catch (err) {
         console.error("Error saving fasting data:", err);
         toast({ title: "Error saving", description: "Please try again", variant: "destructive" });
