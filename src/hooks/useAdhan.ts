@@ -12,13 +12,7 @@ interface AdhanState {
 
 // Multiple Adhan voice options for user selection
 export const ADHAN_OPTIONS = [
-  { id: 'makkah', name: 'Makkah (Default)', url: 'https://www.islamcan.com/audio/adhan/azan1.mp3', fajrUrl: 'https://www.islamcan.com/audio/adhan/azan8.mp3' },
-  { id: 'madinah', name: 'Madinah', url: 'https://www.islamcan.com/audio/adhan/azan2.mp3', fajrUrl: 'https://www.islamcan.com/audio/adhan/azan8.mp3' },
-  { id: 'alaqsa', name: 'Al-Aqsa', url: 'https://www.islamcan.com/audio/adhan/azan3.mp3', fajrUrl: 'https://www.islamcan.com/audio/adhan/azan8.mp3' },
-  { id: 'mishary', name: 'Mishary Rashid', url: 'https://www.islamcan.com/audio/adhan/azan4.mp3', fajrUrl: 'https://www.islamcan.com/audio/adhan/azan8.mp3' },
-  { id: 'abdulbasit', name: 'Abdul Basit', url: 'https://www.islamcan.com/audio/adhan/azan5.mp3', fajrUrl: 'https://www.islamcan.com/audio/adhan/azan8.mp3' },
-  { id: 'egypt', name: 'Egypt', url: 'https://www.islamcan.com/audio/adhan/azan6.mp3', fajrUrl: 'https://www.islamcan.com/audio/adhan/azan8.mp3' },
-  { id: 'turkish', name: 'Turkish', url: 'https://www.islamcan.com/audio/adhan/azan7.mp3', fajrUrl: 'https://www.islamcan.com/audio/adhan/azan8.mp3' },
+  { id: 'makkah', name: 'Makkah', url: 'https://www.islamcan.com/audio/adhan/azan1.mp3', fajrUrl: 'https://www.islamcan.com/audio/adhan/azan8.mp3' },
 ];
 
 const PRAYER_ARABIC_NAMES_MAP: Record<string, string> = {
