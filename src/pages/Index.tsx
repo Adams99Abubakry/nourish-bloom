@@ -5,8 +5,8 @@ import { Footer } from "@/components/Footer";
 import { PrayerTimesCard } from "@/components/PrayerTimesCard";
 import { QuickActions } from "@/components/QuickActions";
 import { DailyVerse } from "@/components/DailyVerse";
-import { RamadanChecklist } from "@/components/RamadanChecklist";
-import { RamadanCountdown } from "@/components/RamadanCountdown";
+// import { RamadanChecklist } from "@/components/RamadanChecklist";
+// import { RamadanCountdown } from "@/components/RamadanCountdown";
 import { DonationCard } from "@/components/DonationCard";
 import { DonationPopup } from "@/components/DonationPopup";
 import { SplashScreen } from "@/components/SplashScreen";
@@ -165,7 +165,7 @@ const Index = () => {
         {/* Main Content Grid */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <PrayerTimesCard />
-          {hijriDate?.isRamadan ? <RamadanChecklist /> : <RamadanCountdown />}
+          {/* {hijriDate?.isRamadan ? <RamadanChecklist /> : <RamadanCountdown />} */}
         </section>
       </main>
 

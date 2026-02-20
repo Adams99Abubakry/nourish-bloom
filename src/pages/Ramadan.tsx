@@ -294,9 +294,9 @@ const Ramadan = () => {
         {/* Main Grid */}
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Daily Checklist */}
-          <div className="animate-slide-up">
+          {/* <div className="animate-slide-up">
             <RamadanChecklist />
-          </div>
+          </div> */}
 
           {/* Laylatul Qadr Tracker */}
           <Card variant="spiritual" className="animate-slide-up">
