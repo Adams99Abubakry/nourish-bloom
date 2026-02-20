@@ -7,6 +7,7 @@ target 'App' do
   # Pods for Capacitor
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
 
   # Add your other plugins here, for example:
   # pod 'Firebase/Core'
