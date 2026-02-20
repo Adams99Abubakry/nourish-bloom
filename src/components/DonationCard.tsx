@@ -4,6 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Heart, BookOpen, Quote } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
+
+// REPLACE THIS WITH YOUR ACTUAL PAYSTACK PAYMENT PAGE URL
+const PAYSTACK_PAYMENT_PAGE_URL = "https://paystack.shop/pay/1-jk850c22"; 
 
 const charityInspirations = [
   {
@@ -39,8 +44,21 @@ export function DonationCard() {
 
   const inspiration = charityInspirations[Math.floor(Date.now() / 86400000) % charityInspirations.length];
 
-  const handleDonate = () => {
+  const handleDonate = async () => {
     const numAmount = parseFloat(amount);
+    
+    // Check for iOS Platform
+    if (Capacitor.getPlatform() === 'ios') {
+      try {
+        await Browser.open({ url: PAYSTACK_PAYMENT_PAGE_URL });
+        return;
+      } catch (error) {
+        console.error("Failed to open browser", error);
+        toast({ title: "Error", description: "Could not open donation page", variant: "destructive" });
+        return;
+      }
+    }
+
     if (!numAmount || numAmount < 100) {
       toast({ title: "Invalid amount", description: "Please enter at least ₦100", variant: "destructive" });
       return;
