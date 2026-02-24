@@ -47,6 +47,8 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app requires access to your location to show accurate prayer times and Qibla direction.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app requires access to your location to show accurate prayer times and Qibla direction.</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 </dict>
