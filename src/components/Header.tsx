@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { SafeAreaView } from "@/components/ui/SafeAreaView";
 
 const navItems = [
   { name: "Home", path: "/" },
@@ -22,7 +23,11 @@ export function Header() {
   const { user } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border/50 safe-top">
+    <SafeAreaView 
+      as="header" 
+      edges={['top']}
+      className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border/50"
+    >
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex h-14 sm:h-16 items-center justify-between">
           {/* Logo */}
@@ -150,6 +155,6 @@ export function Header() {
           </nav>
         )}
       </div>
-    </header>
+    </SafeAreaView>
   );
 }

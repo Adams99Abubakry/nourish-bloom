@@ -14,9 +14,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ALL_COUNTRIES } from "@/data/countries";
+import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
+
 
 interface LocationPermissionPopupProps {
-  onLocationGranted?: (coords?: GeolocationCoordinates) => void;
+  onLocationGranted?: (coords?: any) => void;
   onDismiss?: () => void;
 }
 
@@ -54,17 +57,43 @@ export const LocationPermissionPopup = ({
     setError(null);
 
     try {
-      if (!navigator.geolocation) {
-        throw { code: 2, message: "Geolocation not supported" };
-      }
+      let position: { coords: { latitude: number; longitude: number } };
+      
+      if (Capacitor.isNativePlatform()) {
+        const hasPermission = await Geolocation.checkPermissions();
+        
+        if (hasPermission.location === 'prompt' || hasPermission.location === 'prompt-with-rationale') {
+          const permission = await Geolocation.requestPermissions();
+          if (permission.location !== 'granted') {
+             throw new Error("Location permission denied");
+          }
+        }
 
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: false, // Less strict for Capacitor
-          timeout: 15000,
-          maximumAge: 300000, // Accept cached position up to 5 min
+        // Use a timeout race to prevent infinite loading on native
+        const coordinatesPromise = Geolocation.getCurrentPosition({
+          enableHighAccuracy: false,
+          timeout: 10000,
+          maximumAge: 300000
         });
-      });
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Location request timed out")), 10000)
+        );
+
+        position = await Promise.race([coordinatesPromise, timeoutPromise]) as any;
+      } else {
+        if (!navigator.geolocation) {
+          throw { code: 2, message: "Geolocation not supported" };
+        }
+        
+        position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 300000, 
+          });
+        }) as any;
+      }
 
       // Reverse geocode to get city name
       try {
@@ -91,9 +120,23 @@ export const LocationPermissionPopup = ({
 
       localStorage.setItem("nur-location-granted", "true");
       localStorage.setItem("nur-location-popup-seen", "true");
-      onLocationGranted?.(position.coords);
+
+      // onLocationGranted?.(position.coords); 
+      // Need to cast to match interface if using capacitor coords vs native web coords
+      const coords = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy || 0,
+        altitude: position.coords.altitude || 0,
+        altitudeAccuracy: position.coords.altitudeAccuracy || 0,
+        heading: position.coords.heading || 0, 
+        speed: position.coords.speed || 0
+      };
+      
+      onLocationGranted?.(coords);
       setIsOpen(false);
     } catch (err: any) {
+      console.error("Location error:", err);
       setError("Could not detect location automatically. Please enter it manually below.");
       setShowManual(true);
     } finally {
@@ -173,20 +216,24 @@ export const LocationPermissionPopup = ({
             </div>
           )}
 
+
           {!showManual && (
             <div className="space-y-2">
-              <Button className="w-full h-10 sm:h-11 text-sm" onClick={handleEnableLocation} disabled={isLoading}>
+              <Button className="w-full h-10 sm:h-11 text-sm bg-primary hover:bg-primary/90" onClick={handleEnableLocation} disabled={isLoading}>
                 {isLoading ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Detecting Location...</>
                 ) : (
-                  <><LocateFixed className="w-4 h-4 mr-2" />Auto-detect Location</>
+                  <><LocateFixed className="w-4 h-4 mr-2" />Allow Location Access</>
                 )}
               </Button>
-              <Button variant="outline" className="w-full h-10 sm:h-11 text-sm" onClick={() => setShowManual(true)}>
-                <MapPin className="w-4 h-4 mr-2" />Enter Location Manually
+              <Button variant="ghost" className="w-full h-10 sm:h-11 text-sm text-muted-foreground" onClick={() => setShowManual(true)}>
+                Enter Location Manually
               </Button>
             </div>
           )}
+
+          {/* Manually show manual entry form without dismiss button */}
+
 
           {showManual && (
             <div className="space-y-3">
@@ -234,11 +281,9 @@ export const LocationPermissionPopup = ({
             </div>
           )}
 
-          {!showManual && (
-            <Button variant="ghost" className="w-full h-10 sm:h-11 text-sm" onClick={handleDismiss} disabled={isLoading}>
-              Maybe Later
-            </Button>
-          )}
+
+          {/* Removed soft dismiss button to comply with App Store Guideline 5.1.1 */}
+
 
           <p className="text-[10px] sm:text-xs text-muted-foreground text-center px-4">
             Your location is only used for prayer times and never shared.
